@@ -10,7 +10,10 @@ const port = process.env.PORT || 5000;
 
 app.use(cors())
 
+app.get('/', (req, res) => { console.log('Hello'); res.json({ message: 'Working' }) })
 app.get('/salam', fetchJiraData)
 app.get('/star', fetchJiraData)
 
-export default app;
+app.listen(port, () => {
+    console.log(`Server is online at: http://localhost:${port}`)
+})
