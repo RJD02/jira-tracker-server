@@ -1,6 +1,8 @@
 import { JiraCredential } from "../../types/types";
 export { starTeam } from "./star-team";
 
+console.log(process.env.BASE_URL)
+
 export const BASE_URL = process.env.STAR_BASE_URL || "url";
 export const BOARD = "Data Lake";
 

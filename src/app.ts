@@ -1,9 +1,9 @@
 import express, { Express } from 'express'
 import dotenv from 'dotenv'
+dotenv.config()
 import { fetchJiraData } from './controller/jira-client';
 import cors from 'cors'
 
-dotenv.config()
 
 const app: Express = express()
 const port = process.env.PORT || 5000;
