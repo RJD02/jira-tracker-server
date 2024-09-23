@@ -14,6 +14,4 @@ app.get('/', (req, res) => { console.log('Hello'); res.json({ message: 'Working'
 app.get('/salam', fetchJiraData)
 app.get('/star', fetchJiraData)
 
-app.listen(port, () => {
-    console.log(`Server is online at: http://localhost:${port}`)
-})
+export default app;
