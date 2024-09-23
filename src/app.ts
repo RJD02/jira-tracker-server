@@ -17,3 +17,5 @@ app.get('/star', fetchJiraData)
 app.listen(port, () => {
     console.log(`Server is online at: http://localhost:${port}`)
 })
+
+export default app
