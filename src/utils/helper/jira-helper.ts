@@ -7,7 +7,7 @@ export function resolveCommentUsers(
 ) {
   issue.fields.comment.comments.forEach((comment) => {
     const regex = /\[~accountid:([^\]]+)\]/g;
-    comment.body = comment.body.replace(regex, (_, id) => {
+    comment.body = comment.body?.replace(regex, (_, id) => {
       return "@" + (usermap[id] || id);
     });
   });
@@ -18,7 +18,7 @@ export function resolveUsers(
   usermap: Record<string, string>
 ) {
   const regex = /\[~accountid:([^\]]+)\]/g;
-  return description.replace(regex, (_, id) => {
+  return description?.replace(regex, (_, id) => {
     return "@" + (usermap[id] || id);
   });
 }
