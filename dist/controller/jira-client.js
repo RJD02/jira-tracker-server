@@ -11,8 +11,10 @@ const isValidProject = (val) => {
     return ["SALAM", "STAR", "CUSTOMER_SUCCESS"].includes(val.toUpperCase());
 };
 const fetchJiraData = async (req, res) => {
-    const extractProject = req.url.split('/')[1].toUpperCase();
-    const project = isValidProject(extractProject) ? extractProject : "SALAM";
+    const extractProject = req.url.split("/")[1].toUpperCase();
+    const project = isValidProject(extractProject)
+        ? extractProject
+        : "SALAM";
     const { board, credential, team } = (0, config_1.getConfig)(project);
     let issuesToTrack = null;
     var jira = new jira_client_1.default(credential);
@@ -60,7 +62,10 @@ const fetchJiraData = async (req, res) => {
             };
             await fetchWorklogsInBatches(issuesToTrack.issues);
         }
-        issuesToTrack.issues.forEach((issue) => (0, jira_helper_1.resolveCommentUsers)(issue, (0, jira_helper_1.createTeamMap)(team)));
+        issuesToTrack.issues.forEach((issue) => {
+            issue.fields.description = (0, jira_helper_1.resolveUsers)(issue.fields.description, (0, jira_helper_1.createTeamMap)(team));
+            (0, jira_helper_1.resolveCommentUsers)(issue, (0, jira_helper_1.createTeamMap)(team));
+        });
         res.json({ data: issuesToTrack });
         // return issuesToTrack;
     }
