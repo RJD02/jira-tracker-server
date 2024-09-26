@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConfig = getConfig;
 const starConfig = __importStar(require("../config/star/star-config"));
 const salamConfig = __importStar(require("../config/salam/salam-config"));
+const customerSuccessConfig = __importStar(require("../config/customer-success/cs-config"));
 function getConfig(project) {
     switch (project) {
         case "STAR":
@@ -40,6 +41,13 @@ function getConfig(project) {
                 baseurl: salamConfig.BASE_URL,
                 credential: salamConfig.salamCredentials,
                 team: salamConfig.salamTeam,
+            };
+        case "CUSTOMER_SUCCESS":
+            return {
+                baseurl: customerSuccessConfig.BASE_URL,
+                credential: customerSuccessConfig.customerSuccessCredentials,
+                // board: 'CustomerSucess',
+                team: customerSuccessConfig.customerSuccessTeam
             };
     }
     throw new Error("Invalid project");
