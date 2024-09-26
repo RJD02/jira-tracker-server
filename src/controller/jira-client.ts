@@ -5,11 +5,11 @@ import { getConfig, PROJECT } from "../config/config";
 import { jiraRecentActivityFilter, createTeamMap, resolveCommentUsers } from "../utils/helper/jira-helper";
 
 const isValidProject = (val: string): val is PROJECT => {
-    return ["SALAM", "STAR"].includes(val)
+    return ["SALAM", "STAR", "CUSTOMER_SUCCESS"].includes(val.toUpperCase())
 }
 
 export const fetchJiraData = async (req: Request, res: Response) => {
-    const extractProject = req.url.split('/')[1];
+    const extractProject = req.url.split('/')[1].toUpperCase();
     const project: PROJECT = isValidProject(extractProject) ? extractProject : "SALAM"
     const { board, credential, team } = getConfig(project);
     let issuesToTrack: JiraResponse | null = null;

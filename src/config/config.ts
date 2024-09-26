@@ -1,6 +1,7 @@
 import { JiraCredential } from "../types/types";
 import * as starConfig from "../config/star/star-config";
 import * as salamConfig from "../config/salam/salam-config";
+import * as customerSuccessConfig from '../config/customer-success/cs-config'
 
 import { TeamMember } from "../types/team";
 
@@ -10,7 +11,7 @@ interface Config {
     credential: JiraCredential;
     team: TeamMember[];
 }
-export type PROJECT = "STAR" | "SALAM";
+export type PROJECT = "STAR" | "SALAM" | "CUSTOMER_SUCCESS";
 
 export function getConfig(project: PROJECT): Config {
     switch (project) {
@@ -27,6 +28,13 @@ export function getConfig(project: PROJECT): Config {
                 credential: salamConfig.salamCredentials,
                 team: salamConfig.salamTeam,
             };
+        case "CUSTOMER_SUCCESS":
+            return {
+                baseurl: customerSuccessConfig.BASE_URL,
+                credential: customerSuccessConfig.customerSuccessCredentials,
+                // board: 'CustomerSucess',
+                team: customerSuccessConfig.customerSuccessTeam
+            }
     }
 
     throw new Error("Invalid project");

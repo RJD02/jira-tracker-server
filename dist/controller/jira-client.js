@@ -12,13 +12,10 @@ const isValidProject = (val) => {
 };
 const fetchJiraData = async (req, res) => {
     const extractProject = req.url.split('/')[1].toUpperCase();
-    console.log(extractProject);
     const project = isValidProject(extractProject) ? extractProject : "SALAM";
-    console.log(project);
     const { board, credential, team } = (0, config_1.getConfig)(project);
     let issuesToTrack = null;
     var jira = new jira_client_1.default(credential);
-    console.log(jira);
     try {
         const filter = (0, jira_helper_1.jiraRecentActivityFilter)(team, board);
         issuesToTrack = (await jira.searchJira(filter, {
