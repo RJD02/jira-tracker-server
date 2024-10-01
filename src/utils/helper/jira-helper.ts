@@ -1,5 +1,6 @@
 import { TeamMember } from "../../types/team";
 import { Issue } from "../../types/types";
+import { getLastNBusinessDays } from "../utils";
 
 export function resolveCommentUsers(
   issue: Issue,
@@ -23,7 +24,6 @@ export function resolveUsers(
   });
 }
 
-const recentlyChanged = "updated >=  startOfDay(-1)";
 const itemstoClose = `statusCategory in ("In Progress", "To Do")`; //issuetype in (Story, Bug, Task) and
 const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done, "To Do"))`; //filter for active sprint
 
@@ -31,6 +31,12 @@ export function jiraRecentActivityFilter(
   teamMembers: TeamMember[],
   board?: string
 ) {
+  const [_, businessDayCount] = getLastNBusinessDays(1);
+  const recentlyChanged = `updated >=  startOfDay(${Math.max(
+    Math.min(-1 * businessDayCount, -1),
+    -4
+  )})`;
+
   const developers = teamMembers.filter(
     (member) => member.role === "developer"
   );

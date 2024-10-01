@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConfig = getConfig;
 const starConfig = __importStar(require("../config/star/star-config"));
 const salamConfig = __importStar(require("../config/salam/salam-config"));
+const vdaConfig = __importStar(require("../config/vda/vda-config"));
 const customerSuccessConfig = __importStar(require("../config/customer-success/cs-config"));
 function getConfig(project) {
     switch (project) {
@@ -47,7 +48,13 @@ function getConfig(project) {
                 baseurl: customerSuccessConfig.BASE_URL,
                 credential: customerSuccessConfig.customerSuccessCredentials,
                 // board: 'CustomerSucess',
-                team: customerSuccessConfig.customerSuccessTeam
+                team: customerSuccessConfig.customerSuccessTeam,
+            };
+        case "VDA":
+            return {
+                baseurl: vdaConfig.BASE_URL,
+                credential: vdaConfig.vdaCredentials,
+                team: vdaConfig.vdaTeam,
             };
     }
     throw new Error("Invalid project");

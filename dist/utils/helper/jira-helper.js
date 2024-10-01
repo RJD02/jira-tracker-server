@@ -4,6 +4,7 @@ exports.createTeamMap = void 0;
 exports.resolveCommentUsers = resolveCommentUsers;
 exports.resolveUsers = resolveUsers;
 exports.jiraRecentActivityFilter = jiraRecentActivityFilter;
+const utils_1 = require("../utils");
 function resolveCommentUsers(issue, usermap) {
     issue.fields.comment.comments.forEach((comment) => {
         const regex = /\[~accountid:([^\]]+)\]/g;
@@ -18,10 +19,11 @@ function resolveUsers(description, usermap) {
         return "@" + (usermap[id] || id);
     });
 }
-const recentlyChanged = "updated >=  startOfDay(-1)";
 const itemstoClose = `statusCategory in ("In Progress", "To Do")`; //issuetype in (Story, Bug, Task) and
 const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done, "To Do"))`; //filter for active sprint
 function jiraRecentActivityFilter(teamMembers, board) {
+    const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
+    const recentlyChanged = `updated >=  startOfDay(${Math.max(Math.min(-1 * businessDayCount, -1), -4)})`;
     const developers = teamMembers.filter((member) => member.role === "developer");
     const assignee = `(
    assignee in (${developers.map((member) => member.id).join(",")}) or 
