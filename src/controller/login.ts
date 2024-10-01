@@ -10,7 +10,6 @@ export const Login = (req: Request, res: Response) => {
     const { password, username }: LoginRequest = req.body
     try {
         const query = 'select * from users  where username=?'
-        console.log('query=', query)
         const userHandler = (err: Error, user: User) => {
             if (err) {
                 return res.status(500).json({ err: err.message })
@@ -18,7 +17,6 @@ export const Login = (req: Request, res: Response) => {
             if (!user) {
                 return res.status(404).json({ message: 'User not found' })
             }
-            console.log(user)
             bcrypt.compare(password, user.password, (err, result) => {
                 if (err) {
                     return res.status(500).json({ err: err.message })
@@ -63,11 +61,9 @@ export const createUser = async () => {
                 insert into users (username, password) values 
                 ('${user.username}', '${user.password}')
                 `
-        console.log(query)
 
         const data = db.run(query)
-        console.log('Data = ', data)
-        console.log('Added the user')
+        console.log('Whiteklay user created')
     } catch (e) {
         console.log(e)
         return
