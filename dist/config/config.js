@@ -27,6 +27,7 @@ exports.getConfig = getConfig;
 const starConfig = __importStar(require("../config/star/star-config"));
 const salamConfig = __importStar(require("../config/salam/salam-config"));
 const customerSuccessConfig = __importStar(require("../config/customer-success/cs-config"));
+const microUiConfig = __importStar(require("../config/microui/microui-config"));
 function getConfig(project) {
     switch (project) {
         case "STAR":
@@ -48,6 +49,12 @@ function getConfig(project) {
                 credential: customerSuccessConfig.customerSuccessCredentials,
                 // board: 'CustomerSucess',
                 team: customerSuccessConfig.customerSuccessTeam
+            };
+        case "MICROUI":
+            return {
+                baseurl: microUiConfig.BASE_URL,
+                credential: microUiConfig.microUiCredentials,
+                team: microUiConfig.microUiTeam
             };
     }
     throw new Error("Invalid project");

@@ -8,7 +8,7 @@ const jira_client_1 = __importDefault(require("jira-client"));
 const config_1 = require("../config/config");
 const jira_helper_1 = require("../utils/helper/jira-helper");
 const isValidProject = (val) => {
-    return ["SALAM", "STAR", "CUSTOMER_SUCCESS"].includes(val.toUpperCase());
+    return ["SALAM", "STAR", "CUSTOMER_SUCCESS", 'MICROUI'].includes(val.toUpperCase());
 };
 const fetchJiraData = async (req, res) => {
     const extractProject = req.url.split("/")[1].toUpperCase();
