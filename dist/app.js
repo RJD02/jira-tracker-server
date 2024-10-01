@@ -36,8 +36,8 @@ const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-// loginController.createUserTable()
-// loginController.createUser()
+loginController.createUserTable();
+loginController.createUser();
 app.get('/', (req, res) => { console.log('Hello'); res.json({ message: 'Working' }); });
 app.get('/salam', jiraController.fetchJiraData);
 app.get('/star', jiraController.fetchJiraData);

@@ -2,6 +2,7 @@ import { JiraCredential } from "../types/types";
 import * as starConfig from "../config/star/star-config";
 import * as salamConfig from "../config/salam/salam-config";
 import * as customerSuccessConfig from '../config/customer-success/cs-config'
+import * as microUiConfig from '../config/microui/microui-config'
 
 import { TeamMember } from "../types/team";
 
@@ -11,7 +12,7 @@ interface Config {
     credential: JiraCredential;
     team: TeamMember[];
 }
-export type PROJECT = "STAR" | "SALAM" | "CUSTOMER_SUCCESS";
+export type PROJECT = "STAR" | "SALAM" | "CUSTOMER_SUCCESS" | 'MICROUI';
 
 export function getConfig(project: PROJECT): Config {
     switch (project) {
@@ -34,6 +35,12 @@ export function getConfig(project: PROJECT): Config {
                 credential: customerSuccessConfig.customerSuccessCredentials,
                 // board: 'CustomerSucess',
                 team: customerSuccessConfig.customerSuccessTeam
+            }
+        case "MICROUI":
+            return {
+                baseurl: microUiConfig.BASE_URL,
+                credential: microUiConfig.microUiCredentials,
+                team: microUiConfig.microUiTeam
             }
     }
 
