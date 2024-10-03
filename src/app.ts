@@ -11,15 +11,15 @@ const port = process.env.PORT || 5000;
 app.use(cors())
 app.use(express.json())
 
-loginController.createUserTable()
-loginController.createUser()
+// loginController.createUserTable()
+// loginController.createUser()
 
 app.get('/', (req, res) => { console.log('Hello'); res.json({ message: 'Working' }) })
 app.get('/salam', jiraController.fetchJiraData)
 app.get('/star', jiraController.fetchJiraData)
 app.get('/customer_success', jiraController.fetchJiraData)
 app.get('/microui', jiraController.fetchJiraData)
-app.get('/auth', loginController.Login)
+app.post('/auth', loginController.Login)
 
 app.listen(port, () => {
     console.log(`Server is online at: http://localhost:${port}`)
