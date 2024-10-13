@@ -8,7 +8,7 @@ const jira_client_1 = __importDefault(require("jira-client"));
 const config_1 = require("../config/config");
 const jira_helper_1 = require("../utils/helper/jira-helper");
 const isValidProject = (val) => {
-    return ["SALAM", "STAR", "CUSTOMER_SUCCESS", "VDA"].includes(val.toUpperCase());
+    return ["SALAM", "STAR", "CUSTOMER_SUCCESS", 'VDA'].includes(val.toUpperCase());
 };
 const fetchJiraData = async (req, res) => {
     const extractProject = req.url.split("/")[1].toUpperCase();
@@ -20,41 +20,29 @@ const fetchJiraData = async (req, res) => {
     var jira = new jira_client_1.default(credential);
     try {
         const filter = (0, jira_helper_1.jiraRecentActivityFilter)(team, board);
-        let totalLoaded = 0;
-        do {
-            const records = (await jira.searchJira(filter, {
-                fields: [
-                    "id",
-                    "comment",
-                    "worklog",
-                    "key",
-                    "summary",
-                    "status",
-                    "assignee",
-                    "updated",
-                    "priority",
-                    "labels",
-                    "issuetype",
-                    "reporter",
-                    "created",
-                    "duedate",
-                    "description",
-                    "parent",
-                    "statusCategory",
-                ],
-                expand: [""],
-                maxResults: 150,
-                startAt: totalLoaded,
-            }));
-            if (!issuesToTrack) {
-                issuesToTrack = records;
-            }
-            else {
-                issuesToTrack.issues.push(...records.issues);
-                issuesToTrack.maxResults += records.issues.length;
-            }
-            totalLoaded += records.issues.length;
-        } while (totalLoaded < issuesToTrack.total);
+        issuesToTrack = (await jira.searchJira(filter, {
+            fields: [
+                "id",
+                "comment",
+                "worklog",
+                "key",
+                "summary",
+                "status",
+                "assignee",
+                "updated",
+                "priority",
+                "labels",
+                "issuetype",
+                "reporter",
+                "created",
+                "duedate",
+                "description",
+                "parent",
+                "statusCategory",
+            ],
+            expand: [""],
+            maxResults: 150,
+        }));
         if (project === "SALAM") {
             //Perform 5 requests in parallel
             const BATCH_SIZE = 15;
@@ -79,10 +67,12 @@ const fetchJiraData = async (req, res) => {
             (0, jira_helper_1.resolveCommentUsers)(issue, (0, jira_helper_1.createTeamMap)(team));
         });
         res.json({ data: issuesToTrack });
+        // return issuesToTrack;
     }
     catch (error) {
         console.log(error);
         res.json({ error: error.message });
+        // return { error: error.message };
     }
 };
 exports.fetchJiraData = fetchJiraData;
