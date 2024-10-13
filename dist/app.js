@@ -29,20 +29,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const jiraController = __importStar(require("./controller/jira-client"));
 const cors_1 = __importDefault(require("cors"));
 const express4_1 = require("@apollo/server/express4");
 const server_1 = require("./server");
+const loginController = __importStar(require("./controller/login"));
 const app = (0, express_1.default)();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5002;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-app.get("/", (req, res) => {
-    res.json({ message: "Working" });
-});
-app.get("/salam", jiraController.fetchJiraData);
-app.get("/star", jiraController.fetchJiraData);
-app.get("/customer_success", jiraController.fetchJiraData);
+loginController.createUserTable();
+loginController.createUser();
+loginController.showAllUsers();
+// app.get('/', (req, res) => { console.log('Hello'); res.json({ message: 'Working' }) })
+// app.get('/salam', jiraController.fetchJiraData)
+// app.get('/star', jiraController.fetchJiraData)
+// app.get('/customer_success', jiraController.fetchJiraData)
+// app.get('/microui', jiraController.fetchJiraData)
+app.post('/auth', loginController.Login);
 async function start() {
     await server_1.server.start();
     app.use("/graphql", (0, cors_1.default)(), express_1.default.json(), (0, express4_1.expressMiddleware)(server_1.server));

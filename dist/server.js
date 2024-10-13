@@ -4,6 +4,7 @@ exports.server = void 0;
 const server_1 = require("@apollo/server");
 const jira_client_1 = require("./controller/jira-client");
 const config_1 = require("./config/config");
+const login_1 = require("./controller/login");
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
@@ -173,6 +174,14 @@ type ProjectItem {
   label: String!
 }
 
+type User {
+    id: ID!
+    username: String!
+    password: String!
+    apiKey: String
+    expiry: String
+}
+
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
@@ -180,6 +189,7 @@ type ProjectItem {
     issues(project: PROJECT!): JiraResponse
     members(project: PROJECT!): [TeamMember!]!
     projects: [ProjectItem!]!
+    user(username: String, password: String): User
   }
 `;
 // Resolvers define how to fetch the types defined in your schema.
@@ -201,6 +211,9 @@ const resolvers = {
             ];
             return projects;
         },
+        user(_, { username, password }) {
+            return (0, login_1.LoginGraph)(username, password);
+        }
     },
 };
 // The ApolloServer constructor requires two parameters: your schema

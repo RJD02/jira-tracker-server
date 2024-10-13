@@ -1,6 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { fetchProjectJiraData } from "./controller/jira-client";
 import { getConfig, PROJECT } from "./config/config";
+import { LoginGraph } from "./controller/login";
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -171,6 +172,14 @@ type ProjectItem {
   label: String!
 }
 
+type User {
+    id: ID!
+    username: String!
+    password: String!
+    apiKey: String
+    expiry: String
+}
+
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
@@ -178,34 +187,38 @@ type ProjectItem {
     issues(project: PROJECT!): JiraResponse
     members(project: PROJECT!): [TeamMember!]!
     projects: [ProjectItem!]!
+    user(username: String, password: String): User
   }
 `;
 
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
 const resolvers = {
-  Query: {
-    issues(_: any, { project }: { project: PROJECT }) {
-      return fetchProjectJiraData(project);
+    Query: {
+        issues(_: any, { project }: { project: PROJECT }) {
+            return fetchProjectJiraData(project);
+        },
+        members(_: any, { project }: { project: PROJECT }) {
+            return getConfig(project).team;
+        },
+        projects() {
+            const projects: { id: PROJECT; label: string }[] = [
+                { id: "SALAM", label: "Salam" },
+                { id: "STAR", label: "Star" },
+                { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
+                { id: "VDA", label: "VDA" },
+            ];
+            return projects;
+        },
+        user(_: any, { username, password }: { username: string, password: string }) {
+            return LoginGraph(username, password)
+        }
     },
-    members(_: any, { project }: { project: PROJECT }) {
-      return getConfig(project).team;
-    },
-    projects() {
-      const projects: { id: PROJECT; label: string }[] = [
-        { id: "SALAM", label: "Salam" },
-        { id: "STAR", label: "Star" },
-        { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
-        { id: "VDA", label: "VDA" },
-      ];
-      return projects;
-    },
-  },
 };
 
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
 export const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+    typeDefs,
+    resolvers,
 });
