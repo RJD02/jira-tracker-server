@@ -39,4 +39,19 @@ export const customerSuccessTeam: TeamMember[] = [
     id: "5fca1945cbead5006996bf02",
     role: "developer",
   },
+  {
+    name: "Chinmay",
+    id: "62ce9a1a5d6f5fd2c3da2aad",
+    role: "developer",
+  },
+  {
+    name: "Tharun",
+    id: "60e5b4db471e61006a4cf54d",
+    role: "developer",
+  },
+  {
+    name: "Rushikesh",
+    id: "712020:08dd5fdb-a31e-4a4a-bbf7-6dc0a3948344",
+    role: "developer",
+  },
 ];

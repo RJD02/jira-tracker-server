@@ -41,6 +41,7 @@ export function getConfig(project: PROJECT): Config {
         baseurl: vdaConfig.BASE_URL,
         credential: vdaConfig.vdaCredentials,
         team: vdaConfig.vdaTeam,
+        //board: vdaConfig.BOARD,
       };
   }
 

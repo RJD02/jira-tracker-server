@@ -1,27 +1,41 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.server = void 0;
-const server_1 = require("@apollo/server");
-const jira_client_1 = require("./controller/jira-client");
-const config_1 = require("./config/config");
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
-const typeDefs = `#graphql
- 
-  type JiraResponse {
-    expand: String!
-    startAt: Int!
-    maxResults: Int!
-    total: Int!
-    issues: [Issue!]!
-  }
+# The "Query" type is special: it lists all of the available queries that
+# clients can execute, along with the return type for each. In this
+# case, the "books" query returns an array of zero or more Books (defined above).
+type Query {
+  issues(project: PROJECT!): JiraResponse
+  members(project: PROJECT!): [TeamMember!]!
+  projects: [ProjectItem!]!
+  me: AuthUser
+}
 
-  type TeamMember {
-    name: String!
-    id: String!
-    role: String!
-  }
+type Mutation {
+  login(username: String!, password: String!): AuthPayload
+  signup(username: String!, password: String!): AuthPayload
+}
+
+type AuthUser {
+  id: Int!
+  username: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: AuthUser!
+}
+
+type JiraResponse {
+  expand: String!
+  startAt: Int!
+  maxResults: Int!
+  total: Int!
+  issues: [Issue!]!
+}
+
+type TeamMember {
+  name: String!
+  id: String!
+  role: String!
+}
 
 type Issue {
   expand: String!
@@ -161,7 +175,7 @@ type JiraCredential {
   apiVersion: String!
   strictSSL: Boolean!
 }
-  enum PROJECT {
+enum PROJECT {
   STAR
   SALAM
   CUSTOMER_SUCCESS
@@ -172,40 +186,3 @@ type ProjectItem {
   id: PROJECT!
   label: String!
 }
-
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
-  type Query {
-    issues(project: PROJECT!): JiraResponse
-    members(project: PROJECT!): [TeamMember!]!
-    projects: [ProjectItem!]!
-  }
-`;
-// Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
-const resolvers = {
-    Query: {
-        issues(_, { project }) {
-            return (0, jira_client_1.fetchProjectJiraData)(project);
-        },
-        members(_, { project }) {
-            return (0, config_1.getConfig)(project).team;
-        },
-        projects() {
-            const projects = [
-                { id: "SALAM", label: "Salam" },
-                { id: "STAR", label: "Star" },
-                { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
-                { id: "VDA", label: "VDA" },
-            ];
-            return projects;
-        },
-    },
-};
-// The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers.
-exports.server = new server_1.ApolloServer({
-    typeDefs,
-    resolvers,
-});

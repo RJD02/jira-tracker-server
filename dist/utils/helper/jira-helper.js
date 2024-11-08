@@ -24,6 +24,7 @@ const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done,
 function jiraRecentActivityFilter(teamMembers, board) {
     const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
     const recentlyChanged = `updated >=  startOfDay(${Math.max(Math.min(-1 * businessDayCount, -1), -4)})`;
+    console.log(businessDayCount, recentlyChanged);
     const developers = teamMembers.filter((member) => member.role === "developer");
     const assignee = `(
    assignee in (${developers.map((member) => member.id).join(",")}) or 

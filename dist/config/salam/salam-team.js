@@ -78,18 +78,33 @@ exports.salamTeam = [
         role: "developer",
     },
     {
+        name: "Farhan",
+        id: "61d5bde3e67ea2006bda7094",
+        role: "developer",
+    },
+    {
+        name: "Arjun",
+        id: "60e5b4634134aa00693e42bf",
+        role: "developer",
+    },
+    {
         id: "712020:470852ff-8bd3-4210-91df-1302042ddfd5",
         name: "rodrigue kalash",
         role: "other",
     },
     {
         id: "712020:4261fc89-76a1-4976-8db0-2114cf45a348",
-        name: "pavan kumar",
+        name: "Pavan kumar",
         role: "developer",
     },
     {
         id: "712020:0701bbf0-a0d2-4b12-8591-0a729fa94436",
         name: "Varun T",
+        role: "developer",
+    },
+    {
+        id: "6305dec8f35a006e1be6761b",
+        name: "Sandeep Reddy",
         role: "developer",
     },
     {

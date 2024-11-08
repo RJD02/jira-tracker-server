@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "nodemon  src/app.ts",
+    "dev": "ts-node  src/app.ts",
     "start": "node dist/app.js",
     "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
@@ -16,12 +16,19 @@
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^4.11.0",
+    "@prisma/client": "^5.20.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "graphql": "^16.9.0",
+    "graphql-shield": "^7.6.5",
     "jira-client": "^8.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "prisma-client": "^0.0.0",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
@@ -29,13 +36,14 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jira-client": "^7.1.9",
-    "@types/node": "^22.5.5",
+    "@types/node": "^22.7.5",
     "@types/sqlite3": "^3.1.11",
     "nodemon": "^3.1.7",
     "pre-commit": "^1.2.2",
+    "prisma": "^5.20.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "pre-commit": [
     "ts.check",

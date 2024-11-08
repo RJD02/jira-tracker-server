@@ -55,6 +55,7 @@ function getConfig(project) {
                 baseurl: vdaConfig.BASE_URL,
                 credential: vdaConfig.vdaCredentials,
                 team: vdaConfig.vdaTeam,
+                //board: vdaConfig.BOARD,
             };
     }
     throw new Error("Invalid project");

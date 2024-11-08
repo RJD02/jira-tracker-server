@@ -36,6 +36,7 @@ export function jiraRecentActivityFilter(
     Math.min(-1 * businessDayCount, -1),
     -4
   )})`;
+  console.log(businessDayCount, recentlyChanged);
 
   const developers = teamMembers.filter(
     (member) => member.role === "developer"
