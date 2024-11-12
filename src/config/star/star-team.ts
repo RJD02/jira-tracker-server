@@ -47,6 +47,11 @@ export const starTeam: TeamMember[] = [
     role: "developer",
   },
   {
+    name: "Gaurav",
+    id: "712020:537ed4e3-d3c5-41da-88ec-9eefb089da8d",
+    role: "developer",
+  },
+  {
     name: "Saran",
     id: "712020:e807e9b3-efe1-488f-85cb-57c66e0cfd04",
     role: "developer",
