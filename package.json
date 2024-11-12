@@ -9,7 +9,8 @@
     "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-graphql": "copyfiles -u 1 src/**/*.graphql dist/"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +39,7 @@
     "@types/jira-client": "^7.1.9",
     "@types/node": "^22.7.5",
     "@types/sqlite3": "^3.1.11",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.7",
     "pre-commit": "^1.2.2",
     "prisma": "^5.20.0",
