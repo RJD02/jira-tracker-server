@@ -186,3 +186,30 @@ type ProjectItem {
   id: PROJECT!
   label: String!
 }
+
+type MutationResponse {
+  status: Int!
+  message: String!
+}
+
+type Mutation {
+  jiraUserData(jiraData: [TeamInput!]!, projectName: String!): MutationResponse
+}
+
+input TeamInput {
+  name: String!
+  id: String!
+  role: String!
+}
+
+
+type Mutation {
+  createProject(label: String!, baseurl: String!, board: String): Project
+}
+
+type Project {
+  id: Int!
+  label: String!
+  baseurl: String!
+  board: String
+}
