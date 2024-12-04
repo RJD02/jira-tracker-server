@@ -13,28 +13,8 @@ import { TeamMember } from "../types/team";
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-
-// export async function insertTeamData(teamData: { name: string, id: string, role: string }[], projectName: string) {
-//   for (const member of teamData) {
-//     try {
-//       await prisma.assignee.create({
-//         data: {
-//           project_name: projectName,   // Assign project name (can be dynamic if needed)
-//           user_name: member.name,      // Map 'name' to 'user_name'
-//           jira_id: member.id,          // Map 'id' to 'jira_id'
-//           role: member.role,           // Map 'role' as is
-//         },
-//       });
-//       // console.log(`Inserted project for: ${member.name} in project: ${projectName}`);
-//     } catch (error) {
-//       return JSON.stringify({error: `Error inserting project for ${member.name} in project: ${projectName}: ${error}`});
-//       // console.error(`Error inserting project for ${member.name} in project: ${projectName}:`, error);
-//     }
-//   }
-// }
-
 // Main function to insert all team data
-export async function insertAllTeams() {
+export async function insertAllUsers() {
   // Insert data for each team with their respective project name
   console.log("inserting user data");
   await jiraUserData(csTeam.customerSuccessTeam, "Customer Success Project");
@@ -44,9 +24,7 @@ export async function insertAllTeams() {
   await jiraUserData(vdaTeam.vdaTeam, "VDA Project");
 }
 
-// Execute the insertion
-// insertAllTeams();
-
+// this function is used to insert data
 export async function jiraUserData(jiraData: { name: string, id: string, role: string }[], projectName: string) {
   try {
     await prisma.jiraUser.createMany({

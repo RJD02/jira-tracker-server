@@ -13,48 +13,50 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-
-
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
-  password  String   // Hashed password
+  password  String // Hashed password
   createdAt DateTime @default(now())
 }
 
 model Issue {
-  id         Int      @id @default(autoincrement())
-  key        String
-  summary    String
-  status     String
-  assignee   String
-  updated_at DateTime @default(now())
-  created_at DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  key         String
+  summary     String
+  status      String
+  assignee    String
+  updated_at  DateTime @default(now())
+  created_at  DateTime @default(now())
   description String?
-  worklog String?
-  fields String?
+  worklog     String?
+  fields      String?
+}
+
+
+model SiteUrlTable{
+  site_id Int @id @default(autoincrement())
+  site_url String
+  projects Project2[]
+}
+
+model Project2 {
+  id Int @id  @default(autoincrement())
+  site_id Int
+  baseurl SiteUrlTable  @relation(fields: [site_id], references: [site_id])
+  label   String   @unique
+  board String?
+  email String
+  token String
+  jiraUsers JiraUser[]
+  updated_at  DateTime @default(now())
 }
 
 model JiraUser {
-  id          Int      @id @default(autoincrement())
-  user_name   String
-  jira_id     String
-  role        String
-  updated_at  DateTime @default(now())
-  
-  project_name String
-  project      Project  @relation(fields: [project_name], references: [label])
-
-  // Ensure the combination of jira_id and project_name is unique
-  @@unique([jira_id, project_name])
-}
-
-model Project {
-  id          Int        @id @default(autoincrement())
-  label        String     @unique      // Project name is unique
-  baseurl     String
-  board       String?
-  updated_at  DateTime   @default(now())
-
-  assignees   JiraUser[] // A project can have multiple assignees
+  id        Int       @id @default(autoincrement())
+  user_name String
+  jira_id   String    @unique // This is the unique identifier for the Jira user
+  role      String
+  updated_at DateTime  @default(now())
+  projects  Project2[]
 }
