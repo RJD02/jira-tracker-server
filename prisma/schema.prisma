@@ -41,7 +41,7 @@ model SiteUrlTable{
 }
 
 model Project2 {
-  id Int @id  @default(autoincrement())
+  id String @id
   site_id Int
   baseurl SiteUrlTable  @relation(fields: [site_id], references: [site_id])
   label   String   @unique

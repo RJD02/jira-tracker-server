@@ -1,11 +1,11 @@
-import { PROJECT, getConfig } from "../config/config";
+import { PROJECT, configuration_db } from "../config/config";
 import { fetchProjectJiraData } from "../controller/jira-client";
 import { PrismaClient, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "./config";
 import { Context } from "./server";
-import { jiraUserData } from "../utils/assignee_config";
+// import { jiraUserData } from "../utils/assignee_config";
 import { allProjectsInDb } from "../controller/list-projects-db";
 import { listUsers } from "../controller/list-users";
 import { GraphQLResolveInfo } from 'graphql';
@@ -51,8 +51,9 @@ export const resolvers = {
       console.log("Resolver is running");
       return fetchProjectJiraData(project);
     },
-    members(_: any, { project }: { project: PROJECT }) {
-      return getConfig(project).team;
+    members: async function(_: any, { project }: { project: PROJECT }) {
+      return (await configuration_db(project)).team;
+      // return (await getConfig(project)).team;
     },
 
     getUsers: async function (_: any, { baseurl, token, username, userKey }: GetUsersParams): Promise<UserResponse> {
@@ -80,7 +81,7 @@ export const resolvers = {
       }
   },
 
-    jiraprojects: async function (_: any, { baseurl, token, username }: any) {
+    jiraprojects: async function (_: any, { baseurl, token, username }: { baseurl: string, token: string, username: string }) {
       try {
         // Call the GetListOfProjects function with dynamic arguments
         const projects = await GetListOfProjects(baseurl, token, username);
@@ -94,19 +95,19 @@ export const resolvers = {
     allProjects: async () => {
       try {
           const projectDetails = await allProjectsInDb();
-          console.log("Retrieving Projects");
-          console.log(projectDetails); 
+          // console.log("Retrieving Projects");
+          // console.log(projectDetails); 
           return projectDetails; // This should now return valid project details
       } catch (error) {
           console.error("Error fetching projects:", error);
           throw new Error("Could not fetch projects");
       }
   },
-  usersForProject: async (_: unknown, { projectId }: { projectId: number }, info: GraphQLResolveInfo ) => { 
+  usersForProject: async (_: unknown, { projectId }: { projectId: string }, info: GraphQLResolveInfo ) => { 
     try {
         // Call the listUsers function with the provided projectId
         const users = await listUsers(projectId);
-        console.log("Users:", users);
+        // console.log("Users:", users);
 
         // If 'users' is undefined, return an empty array or handle it accordingly
         if (!users) {
@@ -140,39 +141,84 @@ export const resolvers = {
   Mutation: {
   jiraUserData: async (
     _: any,
-    args: { jiraData: { name: string; id: string; role: string; projectId: number }[] }
-  ): Promise<{success: Boolean, message: String | null}> => {
+    args: { jiraData: { name: string; id: string; role: string; projectId: string }[] }
+  ): Promise<{ success: boolean; message: string | null }> => {
     try {
-    const { jiraData } = args;
-
-    console.log("Received jiraData:", jiraData);
-
-    if (!jiraData || jiraData.length === 0) {
-      throw new Error("jiraData is required but not provided.");
-    }
-    const assigneesData = jiraData.map((member) => ({
-      user_name: member.name,
-      jira_id: member.id,
-      role: member.role,
-      projects: {
-        connect: {
-          id: member.projectId // Use projects instead of project
-        }
+      const { jiraData } = args;
+  
+      console.log("Received jiraData:", jiraData);
+  
+      if (!jiraData || jiraData.length === 0) {
+        throw new Error("jiraData is required but not provided.");
       }
-    }));
-    
-    
-    assigneesData.forEach(async (a) => await prisma.jiraUser.create({data: a}))
-    
-
-      return {success: true, message: "User was inserted successfully"}
-
+  
+      const assigneesData = await Promise.all(
+        jiraData.map(async (member) => {
+          // Find the project by the projectId (URL)
+          const project = await prisma.project2.findUnique({
+            where: { id: member.projectId },
+          });
+  
+          if (!project) {
+            // If project does not exist, throw an error with a specific message
+            throw new Error(`Project not registered for projectId: ${member.projectId}`);
+          }
+  
+          // Check if the JiraUser already exists by jira_id
+          const existingUser = await prisma.jiraUser.findUnique({
+            where: { jira_id: member.id },
+          });
+  
+          if (existingUser) {
+            // If the user exists, connect the user to the new project
+            return {
+              where: { jira_id: member.id },  // Find the existing user
+              update: {
+                projects: {
+                  connect: { id: project.id },  // Connect the user to the new project
+                },
+              },
+            };
+          } else {
+            // If the user does not exist, create a new user and connect to the project
+            return {
+              create: {
+                user_name: member.name,
+                jira_id: member.id,
+                role: member.role,
+                projects: {
+                  connect: { id: project.id },  // Create the user and connect to the project
+                },
+              },
+            };
+          }
+        })
+      );
+  
+      // Perform the insert or update operation based on the data
+      await Promise.all(
+        assigneesData.map(async (data) => {
+          if (data.create) {
+            // Create new user if necessary
+            await prisma.jiraUser.create({ data: data.create });
+          } else if (data.update) {
+            // Update existing user if necessary
+            await prisma.jiraUser.update({
+              where: data.where,
+              data: data.update,
+            });
+          }
+        }));
+  
+      return { success: true, message: "User was inserted or updated successfully" };
     } catch (error) {
-      console.error("Error inserting user data:", error);
-      return {success: false, message: "User not inserted successfully"}
-      // throw new GraphQLError(`Error inserting user data: ${error}`);
+      console.error("Error inserting or updating user data:", error);
+      // Return the error message that contains "Project not registered"
+      return { success: false, message: "User not inserted or updated successfully" };
     }
-  },
+  },  
+  
+  
 
   // Resolver for createSiteUrl
   createSiteUrl: async (_: any, { site_url }: { site_url: string }) => {
@@ -190,7 +236,7 @@ export const resolvers = {
   },
 
   // Resolver for createProject2
-  createProject2: async (_: any, { site_id, label,email,token,board }: { site_id: number; label: string, email: string, token: string, board: string | null }) => {
+  createProject2: async (_: any, { id, site_id, label,email,token,board }: { id: string,site_id: number; label: string, email: string, token: string, board: string | null }) => {
     try {
       // Check if the site exists
       const siteUrl = await prisma.siteUrlTable.findUnique({
@@ -204,6 +250,7 @@ export const resolvers = {
       // Create new project
       const newProject = await prisma.project2.create({
         data: {
+          id,
           label,
           email,
           token,

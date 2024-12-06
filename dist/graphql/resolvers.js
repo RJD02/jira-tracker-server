@@ -10,6 +10,7 @@ const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_2 = require("./config");
+// import { jiraUserData } from "../utils/assignee_config";
 const list_projects_db_1 = require("../controller/list-projects-db");
 const list_users_1 = require("../controller/list-users");
 const list_projects_1 = require("../controller/list-projects");
@@ -28,8 +29,9 @@ exports.resolvers = {
             console.log("Resolver is running");
             return (0, jira_client_1.fetchProjectJiraData)(project);
         },
-        members(_, { project }) {
-            return (0, config_1.getConfig)(project).team;
+        members: async function (_, { project }) {
+            return (await (0, config_1.configuration_db)(project)).team;
+            // return (await getConfig(project)).team;
         },
         getUsers: async function (_, { baseurl, token, username, userKey }) {
             try {

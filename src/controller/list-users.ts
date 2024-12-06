@@ -2,8 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 export const prisma = new PrismaClient();
 
-export async function listUsers(project_id: number) {
+export async function listUsers(project_id: string) {
     try {
+        // console.log(project_id)
         const projectWithUsers = await prisma.project2.findUnique({
             where: {
                 id: project_id,

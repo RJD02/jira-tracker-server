@@ -226,7 +226,7 @@ type ProjectResponse {
 # Define the Query type that includes a query for all projects
 type Query {
     allProjects: [ProjectResponse!]!
-    usersForProject(projectId: Int!): [JiraUserResponse]!
+    usersForProject(projectId: String!): [JiraUserResponse]!
 }
 
 type MutationResponse {
@@ -241,7 +241,7 @@ type SiteUrlTable {
 }
 
 type Project2 {
-  id: Int!
+  id: String!
   site_id: Int!
   baseurl: SiteUrlTable!
   label: String!
@@ -262,14 +262,14 @@ type JiraUser {
 type Mutation {
   jiraUserData(jiraData: [TeamInput!]!): MutationResponse!
   createSiteUrl(site_url: String!): SiteUrlTable!
-  createProject2(site_id: Int!, label: String!,baseurl: String!, board: String,email: String!,token: String!): Project2!
+  createProject2(id: String!,site_id: Int!, label: String!,baseurl: String!, board: String,email: String!,token: String!): Project2!
 }
 
 input TeamInput {
   name: String!
   id: String!
   role: String!
-  projectId: Int!
+  projectId: String!
 }
 
 type MutationResponse {

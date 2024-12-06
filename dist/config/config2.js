@@ -21,17 +21,9 @@ async function configuration_db(project_name) {
                 id: user.jira_id, // Rename jira_id to id
                 role: user.role, // Keep role as is
             }));
-            const creds = {
-                protocol: "https",
-                host: projects[0].baseurl.site_url || "error",
-                username: projects[0].email || "error",
-                password: projects[0].token || "error",
-                apiVersion: "2",
-                strictSSL: true,
-            };
             const result = {
                 baseurl: projects[0].baseurl.site_url, // Access the baseurl from the first project
-                credential: creds, // Access the token from the first project
+                credential: projects[0].token, // Access the token from the first project
                 team: jiraUsersMapped, // The mapped Jira users data
             };
             // console.log(result); // This will log the returned object
@@ -48,35 +40,3 @@ async function configuration_db(project_name) {
         throw error; // Rethrow the error after logging it
     }
 }
-// export function getConfig(project: PROJECT): Config {
-//   switch (project) {
-//     case "STAR":
-//       return {
-//         baseurl: starConfig.BASE_URL,
-//         board: starConfig.BOARD,
-//         credential: starConfig.starCredentials,
-//         team: starConfig.starTeam,
-//       };
-//     case "SALAM":
-//       return {
-//         baseurl: salamConfig.BASE_URL,
-//         credential: salamConfig.salamCredentials,
-//         team: salamConfig.salamTeam,
-//       };
-//     case "CUSTOMER_SUCCESS":
-//       return {
-//         baseurl: customerSuccessConfig.BASE_URL,
-//         credential: customerSuccessConfig.customerSuccessCredentials,
-//         // board: 'CustomerSucess',
-//         team: customerSuccessConfig.customerSuccessTeam,
-//       };
-//     case "VDA":
-//       return {
-//         baseurl: vdaConfig.BASE_URL,
-//         credential: vdaConfig.vdaCredentials,
-//         team: vdaConfig.vdaTeam,
-//         //board: vdaConfig.BOARD,
-//       };
-//   }
-//   throw new Error("Invalid project");
-// }

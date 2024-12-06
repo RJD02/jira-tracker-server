@@ -11,10 +11,10 @@ export async function GetListOfProjects(baseurl: string, token: string, username
             strictSSL: true
         });
         const projects = await jira.listProjects();
-        // console.log(projects);
+        console.log(projects);
         const projectArray = projects.map((project) => {
             return {
-                id: project.id,
+                id: project.self,
                 name: project.name,
                 key: project.key
             };
