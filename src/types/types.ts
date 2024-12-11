@@ -15,7 +15,7 @@ export interface Issue {
   fields: IssueFields;
 }
 
-interface IssueFields {
+export interface IssueFields {
   summary: string;
   issuetype: IssueType;
   parent?: ParentIssue;

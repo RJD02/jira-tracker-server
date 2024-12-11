@@ -21,16 +21,18 @@ model User {
 }
 
 model Issue {
-  id          Int      @id @default(autoincrement())
+  id          String      @id
   key         String
   summary     String
   status      String
   assignee    String
   updated_at  DateTime @default(now())
-  created_at  DateTime @default(now())
+  created_at  DateTime
   description String?
   worklog     String?
   fields      String?
+  project_id  String 
+  project     Project2  @relation(fields: [project_id], references: [id])
 }
 
 
@@ -50,6 +52,7 @@ model Project2 {
   token String
   jiraUsers JiraUser[]
   updated_at  DateTime @default(now())
+  issues Issue[]
 }
 
 model JiraUser {

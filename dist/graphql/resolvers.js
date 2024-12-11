@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = exports.prisma = void 0;
 const config_1 = require("../config/config");
 const jira_client_1 = require("../controller/jira-client");
+const jira_issues_data_1 = require("../controller/jira-issues-data");
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -15,6 +16,7 @@ const list_projects_db_1 = require("../controller/list-projects-db");
 const list_users_1 = require("../controller/list-users");
 const list_projects_1 = require("../controller/list-projects");
 const jira_list_user_in_project_1 = require("../controller/jira-list-user-in-project");
+const update_checker_1 = require("../controller/update-checker");
 exports.prisma = new client_1.PrismaClient();
 const { GraphQLError } = require('graphql');
 exports.resolvers = {
@@ -25,9 +27,15 @@ exports.resolvers = {
             }
             return context.user;
         },
-        issues(_, { project }) {
-            console.log("Resolver is running");
-            return (0, jira_client_1.fetchProjectJiraData)(project);
+        issues: async function (_, { project }) {
+            console.log("Resolver is running on", project);
+            if (await (0, update_checker_1.updateNeed)(project)) {
+                return (0, jira_client_1.fetchProjectJiraData)(project);
+            }
+            else {
+                const ans = await (0, jira_issues_data_1.fetchingJiraIssues)(project);
+                return ans;
+            }
         },
         members: async function (_, { project }) {
             return (await (0, config_1.configuration_db)(project)).team;

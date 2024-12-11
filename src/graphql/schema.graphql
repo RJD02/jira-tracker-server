@@ -2,8 +2,8 @@
 # clients can execute, along with the return type for each. In this
 # case, the "books" query returns an array of zero or more Books (defined above).
 type Query {
-  issues(project: PROJECT!): JiraResponse
-  members(project: PROJECT!): [TeamMember!]!
+  issues(project: String!): JiraResponse
+  members(project: String!): [TeamMember!]!
   projects: [ProjectItem!]!
   me: AuthUser
 }
@@ -175,15 +175,10 @@ type JiraCredential {
   apiVersion: String!
   strictSSL: Boolean!
 }
-enum PROJECT {
-  STAR
-  SALAM
-  CUSTOMER_SUCCESS
-  VDA
-}
+
 
 type ProjectItem {
-  id: PROJECT!
+  id: String!
   label: String!
 }
 

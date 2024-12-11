@@ -1,5 +1,6 @@
 import { PROJECT, configuration_db } from "../config/config";
 import { fetchProjectJiraData } from "../controller/jira-client";
+import { fetchingJiraIssues } from "../controller/jira-issues-data";
 import { PrismaClient, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -11,6 +12,7 @@ import { listUsers } from "../controller/list-users";
 import { GraphQLResolveInfo } from 'graphql';
 import { GetListOfProjects } from "../controller/list-projects";
 import { listUsersForProject } from "../controller/jira-list-user-in-project";
+import { updateNeed } from "../controller/update-checker";
 
 export const prisma = new PrismaClient();
 
@@ -47,9 +49,21 @@ export const resolvers = {
       }
       return context.user;
     },
-    issues(_: any, { project }: { project: PROJECT }) {
-      console.log("Resolver is running");
-      return fetchProjectJiraData(project);
+    issues: async function(_: any, { project }: { project: string }) {
+      console.log("Resolver is running on", project);
+      if (await updateNeed(project))
+      {
+        return fetchProjectJiraData(project);
+
+        
+      }
+      else
+      {
+        const ans = await fetchingJiraIssues(project)
+        return ans
+      }
+      
+      
     },
     members: async function(_: any, { project }: { project: PROJECT }) {
       return (await configuration_db(project)).team;
