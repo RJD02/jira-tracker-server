@@ -1,16 +1,16 @@
 "use strict";
+// import { PROJECT } from "../config/config";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatDate = exports.isAfterLastNBusinessDays = exports.getLastNBusinessDays = exports.isValidProject = exports.isWeekend = void 0;
+exports.formatDate = exports.isAfterLastNBusinessDays = exports.getLastNBusinessDays = exports.isWeekend = void 0;
 const isWeekend = (date) => {
     const day = date.getDay();
     return day === 6 || day === 0; // Saturday = 6, Sunday = 0
 };
 exports.isWeekend = isWeekend;
-const isValidProject = (value) => {
-    const validProjects = ["STAR", "SALAM", "CUSTOMER_SUCCESS"];
-    return validProjects.includes(value);
-};
-exports.isValidProject = isValidProject;
+// export const isValidProject = (value: string): value is PROJECT => {
+//   const validProjects: PROJECT[] = ["STAR", "SALAM", "CUSTOMER_SUCCESS"];
+//   return validProjects.includes(value as PROJECT);
+// };
 // Function to calculate the date of the last n business days
 const getLastNBusinessDays = (n = 1) => {
     let businessDayCount = 0;

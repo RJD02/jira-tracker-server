@@ -24,10 +24,12 @@ export async function updateNeed(label:string) {
     // Check if the difference is greater than or less than 30 minutes
     if (minutesDifference <= 30) {
         console.log(`time difference less than 30 mins for ${label}`)
-        return false
+        // return false
+        return { result: false, lastUpdatedTime: lastUpdatedTime };
         } 
     else {
         console.log(`time difference greater than 30 mins for ${label}`)
-        return true
+        // return true
+        return { result: true, lastUpdatedTime: lastUpdatedTime };
         }
 }

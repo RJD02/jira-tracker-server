@@ -11,7 +11,7 @@ const config_1 = require("../config/config");
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 //updation code
-const fetchProjectJiraData = async (extractProject) => {
+const fetchProjectJiraData = async (extractProject, last_update_time) => {
     const { board, credential, team, baseurl } = await (0, config_1.configuration_db)(extractProject); // Assuming project_id is fetched here
     const project_ = await prisma.project2.findMany({
         where: {
@@ -23,7 +23,7 @@ const fetchProjectJiraData = async (extractProject) => {
     let issuesToTrack = null;
     const jira = new jira_client_1.default(credential);
     try {
-        const filter = (0, jira_helper_1.jiraRecentActivityFilter)(team, board);
+        const filter = (0, jira_helper_1.jiraRecentActivityFilter)(team, last_update_time, board);
         let totalLoaded = 0;
         do {
             const records = (await jira.searchJira(filter, {

@@ -13,7 +13,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 //updation code
 
-export const fetchProjectJiraData = async (extractProject: string) => {
+export const fetchProjectJiraData = async (extractProject: string,last_update_time: Date) => {
     const { board, credential, team, baseurl} = await configuration_db(extractProject);  // Assuming project_id is fetched here
     const project_ = await prisma.project2.findMany({
         where: {
@@ -26,7 +26,7 @@ export const fetchProjectJiraData = async (extractProject: string) => {
     const jira = new JiraApi(credential);
 
     try {
-        const filter = jiraRecentActivityFilter(team, board);
+        const filter = jiraRecentActivityFilter(team,last_update_time,board);
         let totalLoaded = 0;
         do {
             const records = (await jira.searchJira(filter, {

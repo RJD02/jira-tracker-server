@@ -1,14 +1,14 @@
-import { PROJECT } from "../config/config";
+// import { PROJECT } from "../config/config";
 
 export const isWeekend = (date: Date) => {
   const day = date.getDay();
   return day === 6 || day === 0; // Saturday = 6, Sunday = 0
 };
 
-export const isValidProject = (value: string): value is PROJECT => {
-  const validProjects: PROJECT[] = ["STAR", "SALAM", "CUSTOMER_SUCCESS"];
-  return validProjects.includes(value as PROJECT);
-};
+// export const isValidProject = (value: string): value is PROJECT => {
+//   const validProjects: PROJECT[] = ["STAR", "SALAM", "CUSTOMER_SUCCESS"];
+//   return validProjects.includes(value as PROJECT);
+// };
 
 // Function to calculate the date of the last n business days
 export const getLastNBusinessDays = (n = 1): [Date, number] => {

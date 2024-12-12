@@ -27,10 +27,11 @@ exports.resolvers = {
             }
             return context.user;
         },
-        issues: async function (_, { project }) {
+        issues: async function (_, { project, forced = false }) {
             console.log("Resolver is running on", project);
-            if (await (0, update_checker_1.updateNeed)(project)) {
-                return (0, jira_client_1.fetchProjectJiraData)(project);
+            const checking_last_update = await (0, update_checker_1.updateNeed)(project);
+            if (checking_last_update.result || forced) {
+                return (0, jira_client_1.fetchProjectJiraData)(project, checking_last_update.lastUpdatedTime);
             }
             else {
                 const ans = await (0, jira_issues_data_1.fetchingJiraIssues)(project);
@@ -109,15 +110,15 @@ exports.resolvers = {
                 throw new Error("Could not fetch users for project");
             }
         },
-        projects() {
-            const projects = [
-                { id: "SALAM", label: "Salam" },
-                { id: "STAR", label: "Star" },
-                { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
-                { id: "VDA", label: "VDA" },
-            ];
-            return projects;
-        },
+        // projects() {
+        //   const projects: { id: PROJECT; label: string }[] = [
+        //     { id: "SALAM", label: "Salam" },
+        //     { id: "STAR", label: "Star" },
+        //     { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
+        //     { id: "VDA", label: "VDA" },
+        //   ];
+        //   return projects;
+        // },
     },
     Mutation: {
         jiraUserData: async (_, args) => {

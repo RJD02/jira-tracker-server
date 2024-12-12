@@ -2,7 +2,7 @@
 # clients can execute, along with the return type for each. In this
 # case, the "books" query returns an array of zero or more Books (defined above).
 type Query {
-  issues(project: String!): JiraResponse
+  issues(project: String!, forced: Boolean): JiraResponse
   members(project: String!): [TeamMember!]!
   projects: [ProjectItem!]!
   me: AuthUser

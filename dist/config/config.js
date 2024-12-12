@@ -4,6 +4,7 @@ exports.prisma = void 0;
 exports.configuration_db = configuration_db;
 const client_1 = require("@prisma/client");
 exports.prisma = new client_1.PrismaClient();
+// export type PROJECT = "STAR" | "SALAM" | "CUSTOMER_SUCCESS" | "VDA";
 async function configuration_db(project_name) {
     try {
         const projects = await exports.prisma.project2.findMany({
@@ -48,35 +49,3 @@ async function configuration_db(project_name) {
         throw error; // Rethrow the error after logging it
     }
 }
-// export function getConfig(project: PROJECT): Config {
-//   switch (project) {
-//     case "STAR":
-//       return {
-//         baseurl: starConfig.BASE_URL,
-//         board: starConfig.BOARD,
-//         credential: starConfig.starCredentials,
-//         team: starConfig.starTeam,
-//       };
-//     case "SALAM":
-//       return {
-//         baseurl: salamConfig.BASE_URL,
-//         credential: salamConfig.salamCredentials,
-//         team: salamConfig.salamTeam,
-//       };
-//     case "CUSTOMER_SUCCESS":
-//       return {
-//         baseurl: customerSuccessConfig.BASE_URL,
-//         credential: customerSuccessConfig.customerSuccessCredentials,
-//         // board: 'CustomerSucess',
-//         team: customerSuccessConfig.customerSuccessTeam,
-//       };
-//     case "VDA":
-//       return {
-//         baseurl: vdaConfig.BASE_URL,
-//         credential: vdaConfig.vdaCredentials,
-//         team: vdaConfig.vdaTeam,
-//         //board: vdaConfig.BOARD,
-//       };
-//   }
-//   throw new Error("Invalid project");
-// }

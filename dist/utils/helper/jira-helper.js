@@ -21,9 +21,25 @@ function resolveUsers(description, usermap) {
 }
 const itemstoClose = `statusCategory in ("In Progress", "To Do")`; //issuetype in (Story, Bug, Task) and
 const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done, "To Do"))`; //filter for active sprint
-function jiraRecentActivityFilter(teamMembers, board) {
+function jiraRecentActivityFilter(teamMembers, updatedTime, board) {
     const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
-    const recentlyChanged = `updated >=  startOfDay(${Math.max(Math.min(-1 * businessDayCount, -1), -4)})`;
+    // const recentlyChanged = `updated >=  startOfDay(${Math.max(
+    //   Math.min(-1 * businessDayCount, -1),
+    //   -4
+    // )})`;
+    // const indianTime = convertUtcToIndianTime(updatedTime);
+    // console.log(indianTime)
+    const year = updatedTime.getFullYear();
+    const month = String(updatedTime.getMonth() + 1); // Months are zero-indexed
+    const day = String(updatedTime.getDate());
+    const hours = String(updatedTime.getHours());
+    // console.log(hours)
+    const minutes = String(updatedTime.getMinutes());
+    // console.log(minutes)
+    const seconds = String(updatedTime.getSeconds());
+    // Create the formatted date and time string
+    const formattedDatetime = `${year}-${month}-${day} ${hours}:${minutes}`;
+    const recentlyChanged = `updated >= '${formattedDatetime}'`;
     console.log(businessDayCount, recentlyChanged);
     const developers = teamMembers.filter((member) => member.role === "developer");
     const assignee = `(

@@ -1,4 +1,4 @@
-import { PROJECT, configuration_db } from "../config/config";
+import { configuration_db } from "../config/config";
 import { fetchProjectJiraData } from "../controller/jira-client";
 import { fetchingJiraIssues } from "../controller/jira-issues-data";
 import { PrismaClient, User } from "@prisma/client";
@@ -49,11 +49,12 @@ export const resolvers = {
       }
       return context.user;
     },
-    issues: async function(_: any, { project }: { project: string }) {
+    issues: async function(_: any, { project, forced=false }: { project: string, forced?: Boolean }) {
       console.log("Resolver is running on", project);
-      if (await updateNeed(project))
+      const checking_last_update = await updateNeed(project)
+      if (checking_last_update.result || forced)
       {
-        return fetchProjectJiraData(project);
+        return fetchProjectJiraData(project,checking_last_update.lastUpdatedTime);
 
         
       }
@@ -65,7 +66,7 @@ export const resolvers = {
       
       
     },
-    members: async function(_: any, { project }: { project: PROJECT }) {
+    members: async function(_: any, { project }: { project: string }) {
       return (await configuration_db(project)).team;
       // return (await getConfig(project)).team;
     },
@@ -142,15 +143,15 @@ export const resolvers = {
     }
 },
 
-    projects() {
-      const projects: { id: PROJECT; label: string }[] = [
-        { id: "SALAM", label: "Salam" },
-        { id: "STAR", label: "Star" },
-        { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
-        { id: "VDA", label: "VDA" },
-      ];
-      return projects;
-    },
+    // projects() {
+    //   const projects: { id: PROJECT; label: string }[] = [
+    //     { id: "SALAM", label: "Salam" },
+    //     { id: "STAR", label: "Star" },
+    //     { id: "CUSTOMER_SUCCESS", label: "Customer Success" },
+    //     { id: "VDA", label: "VDA" },
+    //   ];
+    //   return projects;
+    // },
   },
   Mutation: {
   jiraUserData: async (
