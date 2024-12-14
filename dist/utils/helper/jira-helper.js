@@ -12,6 +12,7 @@ function resolveCommentUsers(issue, usermap) {
             return "@" + (usermap[id] || id);
         });
     });
+    return issue;
 }
 function resolveUsers(description, usermap) {
     const regex = /\[~accountid:([^\]]+)\]/g;

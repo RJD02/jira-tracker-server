@@ -48,6 +48,7 @@ export async function fetchingJiraIssues(key: string) {
         return;
     }
 
+    let issues: Issue;
 
     // Assuming you want to extract the fields data as JSON
     const issueData = existingIssues.map(issue => {
@@ -56,16 +57,7 @@ export async function fetchingJiraIssues(key: string) {
         try {
             // If fields is a non-null string, parse it, otherwise fallback to an empty object
             fieldsData = issue.fields ? JSON.parse(issue.fields) : {};
-            fieldsData.description = resolveUsers(fieldsData.description, createTeamMap(team));
-            fieldsData.comment = resolveCommentUsers(fieldsData.comment, createTeamMap(team))
-        } catch (error) {
-            console.error(`Error parsing fields for issue ${issue.key}:`, error);
-            fieldsData = {}; // fallback to empty object if JSON parsing fails
-        }
-        // console.log("INSIDE")
-
-
-        const issues : Issue = {
+            issues = {
             expand: '',
             id: issue.id,
             key: issue.key,
@@ -73,7 +65,15 @@ export async function fetchingJiraIssues(key: string) {
             url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
             fields: fieldsData
         }
-        // console.log(issues.url)
+            issues.fields.description = resolveUsers(fieldsData.description, createTeamMap(team));
+            issues = resolveCommentUsers(issues,createTeamMap(team));
+        } catch (error) {
+            console.error(`Error parsing fields for issue ${issue.key}:`, error);
+            fieldsData = {}; // fallback to empty object if JSON parsing fails
+        }
+        // console.log("INSIDE")
+
+
         return issues
     });
 

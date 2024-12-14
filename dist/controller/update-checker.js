@@ -14,6 +14,9 @@ async function updateNeed(label) {
         }
     });
     // console.log(project)
+    if (project[0].issues.length === 0) {
+        return { result: true, lastUpdatedTime: new Date() };
+    }
     const lastUpdatedTime = (project[0].issues[0].updated_at);
     const currentTime = new Date();
     // Calculate the difference in time between now and the last updated time

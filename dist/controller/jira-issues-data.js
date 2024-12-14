@@ -39,6 +39,7 @@ async function fetchingJiraIssues(key) {
         console.error("No issues found for this project");
         return;
     }
+    let issues;
     // Assuming you want to extract the fields data as JSON
     const issueData = existingIssues.map(issue => {
         // Check if fields is not null, then parse it, otherwise set to an empty object
@@ -46,23 +47,22 @@ async function fetchingJiraIssues(key) {
         try {
             // If fields is a non-null string, parse it, otherwise fallback to an empty object
             fieldsData = issue.fields ? JSON.parse(issue.fields) : {};
-            fieldsData.description = (0, jira_helper_1.resolveUsers)(fieldsData.description, (0, jira_helper_1.createTeamMap)(team));
-            fieldsData.comment = (0, jira_helper_1.resolveCommentUsers)(fieldsData.comment, (0, jira_helper_1.createTeamMap)(team));
+            issues = {
+                expand: '',
+                id: issue.id,
+                key: issue.key,
+                self: issue.id,
+                url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
+                fields: fieldsData
+            };
+            issues.fields.description = (0, jira_helper_1.resolveUsers)(fieldsData.description, (0, jira_helper_1.createTeamMap)(team));
+            issues = (0, jira_helper_1.resolveCommentUsers)(issues, (0, jira_helper_1.createTeamMap)(team));
         }
         catch (error) {
             console.error(`Error parsing fields for issue ${issue.key}:`, error);
             fieldsData = {}; // fallback to empty object if JSON parsing fails
         }
         // console.log("INSIDE")
-        const issues = {
-            expand: '',
-            id: issue.id,
-            key: issue.key,
-            self: issue.id,
-            url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
-            fields: fieldsData
-        };
-        // console.log(issues.url)
         return issues;
     });
     return {

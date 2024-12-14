@@ -12,6 +12,7 @@ export function resolveCommentUsers(
       return "@" + (usermap[id] || id);
     });
   });
+  return issue
 }
 
 export function resolveUsers(
