@@ -55,6 +55,9 @@ async function fetchingJiraIssues(key) {
                 url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
                 fields: fieldsData
             };
+            if (issue.worklog === null || issue.worklog === undefined || issue.worklog === '') {
+                issue.worklog = fieldsData.worklog;
+            }
             issues.fields.description = (0, jira_helper_1.resolveUsers)(fieldsData.description, (0, jira_helper_1.createTeamMap)(team));
             issues = (0, jira_helper_1.resolveCommentUsers)(issues, (0, jira_helper_1.createTeamMap)(team));
         }
@@ -62,7 +65,6 @@ async function fetchingJiraIssues(key) {
             console.error(`Error parsing fields for issue ${issue.key}:`, error);
             fieldsData = {}; // fallback to empty object if JSON parsing fails
         }
-        // console.log("INSIDE")
         return issues;
     });
     return {

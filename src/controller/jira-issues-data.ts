@@ -65,14 +65,16 @@ export async function fetchingJiraIssues(key: string) {
             url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
             fields: fieldsData
         }
+            if (issue.worklog===null || issue.worklog===undefined || issue.worklog === '')
+            {
+                issue.worklog = fieldsData.worklog
+            }
             issues.fields.description = resolveUsers(fieldsData.description, createTeamMap(team));
             issues = resolveCommentUsers(issues,createTeamMap(team));
         } catch (error) {
             console.error(`Error parsing fields for issue ${issue.key}:`, error);
             fieldsData = {}; // fallback to empty object if JSON parsing fails
         }
-        // console.log("INSIDE")
-
 
         return issues
     });

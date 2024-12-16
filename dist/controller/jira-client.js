@@ -59,7 +59,8 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
             totalLoaded += records.issues.length;
         } while (totalLoaded < issuesToTrack.total);
         // Fetch worklogs in parallel for batch size
-        if (extractProject === "SALAM") {
+        if (extractProject.toLocaleLowerCase() === "salam") {
+            console.log("Extracting Worklogs");
             const BATCH_SIZE = 15;
             const fetchWorklogsInBatches = async (issues) => {
                 for (let i = 0; i < issues.length; i += BATCH_SIZE) {
