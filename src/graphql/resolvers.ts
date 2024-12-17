@@ -154,6 +154,63 @@ export const resolvers = {
     // },
   },
   Mutation: {
+    deleteProject: async(_: any, { label }:{ label: string }) => {
+      try{
+        const project_ = await prisma.project2.findUnique({
+          where: { label },
+        });
+
+        if (!project_)
+        {
+          throw new Error(`Project name ${project_} doesn't exists`);
+        }
+
+        await prisma.issue.deleteMany({
+          where: { project_id: project_.id },
+        });
+    
+        // Delete related Jira users
+        await prisma.jiraUser.updateMany({
+          where: {
+            projects: {
+              some: { id: project_.id },
+            },
+          },
+          data: {}
+        });
+    
+        // Delete the project
+        const deletedProject = await prisma.project2.delete({
+          where: { label },
+        });
+    
+        return { status: 200, success: true, message: "Project was deleted" };
+      } catch (error) {
+        console.error(error);
+        throw new Error(`Failed to delete project: ${error}`);
+      }
+    },
+
+    deleteJiraUser: async (_: any, { jira_id }: { jira_id: string }) => {
+      try {
+        // Ensure the user exists before deletion
+        const user = await prisma.jiraUser.findUnique({
+          where: { jira_id },
+        });
+        if (!user) {
+          throw new Error(`Jira user with id ${jira_id} not found.`);
+        }
+
+        // Delete the Jira user
+        const deletedUser = await prisma.jiraUser.delete({
+          where: { jira_id },
+        });
+        return { status: 200,success: true, message: "User was deleted" }
+      } catch (error) {
+        console.error(error);
+        throw new Error(`Failed to delete Jira user: ${error}`);
+      }
+    },
   jiraUserData: async (
     _: any,
     args: { jiraData: { name: string; id: string; role: string; projectId: string }[] }
@@ -251,7 +308,7 @@ export const resolvers = {
   },
 
   // Resolver for createProject2
-  createProject2: async (_: any, { id, site_id, label,email,token,board }: { id: string,site_id: number; label: string, email: string, token: string, board: string | null }) => {
+  createProject2: async (_: any, { id, site_id, label,project_key,email,token,board }: { id: string,site_id: number; label: string,project_key: string, email: string, token: string, board: string | null }) => {
     try {
       // Check if the site exists
       const siteUrl = await prisma.siteUrlTable.findUnique({
@@ -267,6 +324,7 @@ export const resolvers = {
         data: {
           id,
           label,
+          project_key,
           email,
           token,
           board,

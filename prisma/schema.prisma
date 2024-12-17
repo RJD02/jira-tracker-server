@@ -32,7 +32,7 @@ model Issue {
   worklog     String?
   fields      String?
   project_id  String 
-  project     Project2  @relation(fields: [project_id], references: [id])
+  project     Project2  @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
 
@@ -47,6 +47,7 @@ model Project2 {
   site_id Int
   baseurl SiteUrlTable  @relation(fields: [site_id], references: [site_id])
   label   String   @unique
+  project_key String
   board String?
   email String
   token String

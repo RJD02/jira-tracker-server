@@ -121,6 +121,57 @@ exports.resolvers = {
         // },
     },
     Mutation: {
+        deleteProject: async (_, { label }) => {
+            try {
+                const project_ = await exports.prisma.project2.findUnique({
+                    where: { label },
+                });
+                if (!project_) {
+                    throw new Error(`Project name ${project_} doesn't exists`);
+                }
+                await exports.prisma.issue.deleteMany({
+                    where: { project_id: project_.id },
+                });
+                // Delete related Jira users
+                await exports.prisma.jiraUser.updateMany({
+                    where: {
+                        projects: {
+                            some: { id: project_.id },
+                        },
+                    },
+                    data: {}
+                });
+                // Delete the project
+                const deletedProject = await exports.prisma.project2.delete({
+                    where: { label },
+                });
+                return { status: 200, success: true, message: "Project was deleted" };
+            }
+            catch (error) {
+                console.error(error);
+                throw new Error(`Failed to delete project: ${error}`);
+            }
+        },
+        deleteJiraUser: async (_, { jira_id }) => {
+            try {
+                // Ensure the user exists before deletion
+                const user = await exports.prisma.jiraUser.findUnique({
+                    where: { jira_id },
+                });
+                if (!user) {
+                    throw new Error(`Jira user with id ${jira_id} not found.`);
+                }
+                // Delete the Jira user
+                const deletedUser = await exports.prisma.jiraUser.delete({
+                    where: { jira_id },
+                });
+                return { status: 200, success: true, message: "User was deleted" };
+            }
+            catch (error) {
+                console.error(error);
+                throw new Error(`Failed to delete Jira user: ${error}`);
+            }
+        },
         jiraUserData: async (_, args) => {
             try {
                 const { jiraData } = args;
@@ -204,7 +255,7 @@ exports.resolvers = {
             }
         },
         // Resolver for createProject2
-        createProject2: async (_, { id, site_id, label, email, token, board }) => {
+        createProject2: async (_, { id, site_id, label, project_key, email, token, board }) => {
             try {
                 // Check if the site exists
                 const siteUrl = await exports.prisma.siteUrlTable.findUnique({
@@ -218,6 +269,7 @@ exports.resolvers = {
                     data: {
                         id,
                         label,
+                        project_key,
                         email,
                         token,
                         board,

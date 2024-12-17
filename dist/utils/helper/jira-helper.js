@@ -5,6 +5,8 @@ exports.resolveCommentUsers = resolveCommentUsers;
 exports.resolveUsers = resolveUsers;
 exports.jiraRecentActivityFilter = jiraRecentActivityFilter;
 const utils_1 = require("../utils");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 function resolveCommentUsers(issue, usermap) {
     issue.fields.comment.comments.forEach((comment) => {
         const regex = /\[~accountid:([^\]]+)\]/g;
@@ -22,7 +24,12 @@ function resolveUsers(description, usermap) {
 }
 const itemstoClose = `statusCategory in ("In Progress", "To Do")`; //issuetype in (Story, Bug, Task) and
 const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done, "To Do"))`; //filter for active sprint
-function jiraRecentActivityFilter(teamMembers, updatedTime, board) {
+async function jiraRecentActivityFilter(teamMembers, updatedTime, project, board) {
+    const key = await prisma.project2.findUnique({
+        where: {
+            label: project
+        }
+    });
     const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
     // const recentlyChanged = `updated >=  startOfDay(${Math.max(
     //   Math.min(-1 * businessDayCount, -1),
@@ -50,7 +57,7 @@ function jiraRecentActivityFilter(teamMembers, updatedTime, board) {
     const teamFilter = board
         ? `Board[Dropdown] = "${board}" and ${assignee}`
         : assignee;
-    const targetWorkItems = ` ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
+    const targetWorkItems = `(project = ${key?.project_key}) and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
     return targetWorkItems;
 }
 const createTeamMap = (team) => team.reduce((acc, member) => {

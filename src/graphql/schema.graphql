@@ -215,6 +215,7 @@ type JiraUserResponse {
 type ProjectResponse {
     id: ID!
     label: String!
+    key: String!
     JiraUserResponse: [JiraUserResponse]!
 }
 
@@ -240,6 +241,7 @@ type Project2 {
   site_id: Int!
   baseurl: SiteUrlTable!
   label: String!
+  project_key: String!
   board: String
   email: String!
   token: String!
@@ -257,7 +259,7 @@ type JiraUser {
 type Mutation {
   jiraUserData(jiraData: [TeamInput!]!): MutationResponse!
   createSiteUrl(site_url: String!): SiteUrlTable!
-  createProject2(id: String!,site_id: Int!, label: String!,baseurl: String!, board: String,email: String!,token: String!): Project2!
+  createProject2(id: String!,site_id: Int!, label: String!,project_key: String!,baseurl: String!, board: String,email: String!,token: String!): Project2!
 }
 
 input TeamInput {
@@ -270,4 +272,9 @@ input TeamInput {
 type MutationResponse {
   success: Boolean!
   message: String
+}
+
+type Mutation{
+  deleteJiraUser(jira_id: String!): MutationResponse
+  deleteProject(label: String!): MutationResponse
 }

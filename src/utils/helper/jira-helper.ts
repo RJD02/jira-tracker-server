@@ -1,6 +1,9 @@
 import { TeamMember } from "../../types/team";
 import { Issue } from "../../types/types";
 import { getLastNBusinessDays } from "../utils";
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 
 export function resolveCommentUsers(
   issue: Issue,
@@ -28,11 +31,17 @@ export function resolveUsers(
 const itemstoClose = `statusCategory in ("In Progress", "To Do")`; //issuetype in (Story, Bug, Task) and
 const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done, "To Do"))`; //filter for active sprint
 
-export function jiraRecentActivityFilter(
+export async function jiraRecentActivityFilter(
   teamMembers: TeamMember[],
   updatedTime: Date,
-  board?: string
+  project: string,
+  board?: string,
 ) {
+  const key = await prisma.project2.findUnique({
+    where:{
+      label: project
+    }
+  })
   const [_, businessDayCount] = getLastNBusinessDays(1);
   // const recentlyChanged = `updated >=  startOfDay(${Math.max(
   //   Math.min(-1 * businessDayCount, -1),
@@ -66,7 +75,7 @@ export function jiraRecentActivityFilter(
   const teamFilter = board
     ? `Board[Dropdown] = "${board}" and ${assignee}`
     : assignee;
-  const targetWorkItems = ` ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
+  const targetWorkItems = `(project = ${key?.project_key}) and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
   return targetWorkItems;
 }
 

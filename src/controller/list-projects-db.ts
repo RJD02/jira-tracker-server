@@ -9,7 +9,8 @@ export async function allProjectsInDb() {
         const projectLabelArray = projectDetails.map((project) => {
             return {
                 id: project.id,      // Ensure id is included correctly
-                label: project.label  // Ensure label is included correctly
+                label: project.label,  // Ensure label is included correctly
+                key: project.project_key
             };
         });
 
