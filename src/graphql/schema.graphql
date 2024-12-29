@@ -2,8 +2,8 @@
 # clients can execute, along with the return type for each. In this
 # case, the "books" query returns an array of zero or more Books (defined above).
 type Query {
-  issues(project: PROJECT!): JiraResponse
-  members(project: PROJECT!): [TeamMember!]!
+  issues(project: String!, forced: Boolean): JiraResponse
+  members(project: String!): [TeamMember!]!
   projects: [ProjectItem!]!
   me: AuthUser
 }
@@ -175,14 +175,106 @@ type JiraCredential {
   apiVersion: String!
   strictSSL: Boolean!
 }
-enum PROJECT {
-  STAR
-  SALAM
-  CUSTOMER_SUCCESS
-  VDA
-}
+
 
 type ProjectItem {
-  id: PROJECT!
+  id: String!
   label: String!
+}
+
+type UserList {
+    account_id: String
+    emailAddress: String
+    displayName: String
+    active: Boolean
+}
+
+type Query {
+    getUsers(baseurl: String!, token: String!, username: String!, userKey: String!): [UserList]
+}
+
+
+# Define the Project type with name and key fields
+type JiraProject {
+    id: String
+    name: String
+    key: String
+}
+
+type Query {
+    jiraprojects(baseurl: String!, token: String!, username: String!): [JiraProject]
+}
+
+type JiraUserResponse {
+    id: Int!
+    name: String!
+    jira_id: String!
+}
+
+
+type ProjectResponse {
+    id: ID!
+    label: String!
+    key: String!
+    JiraUserResponse: [JiraUserResponse]!
+}
+
+# Define the Query type that includes a query for all projects
+type Query {
+    allProjects: [ProjectResponse!]!
+    usersForProject(projectId: String!): [JiraUserResponse]!
+}
+
+type MutationResponse {
+  status: Int!
+  message: String!
+}
+
+type SiteUrlTable {
+  site_id: Int!
+  site_url: String!
+  projects: [Project2!]!
+}
+
+type Project2 {
+  id: String!
+  site_id: Int!
+  baseurl: SiteUrlTable!
+  label: String!
+  project_key: String!
+  board: String
+  email: String!
+  token: String!
+  jiraUsers: [JiraUser!]!
+}
+
+type JiraUser {
+  id: Int!
+  user_name: String!
+  jira_id: String! # Unique identifier for the Jira user
+  role: String!
+  projects: [Project2!]!
+}
+
+type Mutation {
+  jiraUserData(jiraData: [TeamInput!]!): MutationResponse!
+  createSiteUrl(site_url: String!): SiteUrlTable!
+  createProject2(id: String!,site_id: Int!, label: String!,project_key: String!,baseurl: String!, board: String,email: String!,token: String!): Project2!
+}
+
+input TeamInput {
+  name: String!
+  id: String!
+  role: String!
+  projectId: String!
+}
+
+type MutationResponse {
+  success: Boolean!
+  message: String
+}
+
+type Mutation{
+  deleteJiraUser(jira_id: String!): MutationResponse
+  deleteProject(label: String!): MutationResponse
 }

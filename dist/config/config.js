@@ -1,62 +1,51 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfig = getConfig;
-const starConfig = __importStar(require("../config/star/star-config"));
-const salamConfig = __importStar(require("../config/salam/salam-config"));
-const vdaConfig = __importStar(require("../config/vda/vda-config"));
-const customerSuccessConfig = __importStar(require("../config/customer-success/cs-config"));
-function getConfig(project) {
-    switch (project) {
-        case "STAR":
-            return {
-                baseurl: starConfig.BASE_URL,
-                board: starConfig.BOARD,
-                credential: starConfig.starCredentials,
-                team: starConfig.starTeam,
+exports.prisma = void 0;
+exports.configuration_db = configuration_db;
+const client_1 = require("@prisma/client");
+exports.prisma = new client_1.PrismaClient();
+// export type PROJECT = "STAR" | "SALAM" | "CUSTOMER_SUCCESS" | "VDA";
+async function configuration_db(project_name) {
+    try {
+        const projects = await exports.prisma.project2.findMany({
+            where: {
+                label: project_name
+            },
+            include: {
+                baseurl: true,
+                jiraUsers: true, // This will include related JiraUsers for each project
+            },
+        });
+        if (projects.length > 0) {
+            const jiraUsersMapped = projects[0].jiraUsers.map((user) => ({
+                name: user.user_name, // Rename user_name to name
+                id: user.jira_id, // Rename jira_id to id
+                role: user.role, // Keep role as is
+            }));
+            const creds = {
+                protocol: "https",
+                host: projects[0].baseurl.site_url || "error",
+                username: projects[0].email || "error",
+                password: projects[0].token || "error",
+                apiVersion: "2",
+                strictSSL: true,
             };
-        case "SALAM":
-            return {
-                baseurl: salamConfig.BASE_URL,
-                credential: salamConfig.salamCredentials,
-                team: salamConfig.salamTeam,
+            const result = {
+                baseurl: projects[0].baseurl.site_url, // Access the baseurl from the first project
+                credential: creds, // Access the token from the first project
+                team: jiraUsersMapped, // The mapped Jira users data
             };
-        case "CUSTOMER_SUCCESS":
-            return {
-                baseurl: customerSuccessConfig.BASE_URL,
-                credential: customerSuccessConfig.customerSuccessCredentials,
-                // board: 'CustomerSucess',
-                team: customerSuccessConfig.customerSuccessTeam,
-            };
-        case "VDA":
-            return {
-                baseurl: vdaConfig.BASE_URL,
-                credential: vdaConfig.vdaCredentials,
-                team: vdaConfig.vdaTeam,
-                //board: vdaConfig.BOARD,
-            };
+            // console.log(result); // This will log the returned object
+            return result;
+        }
+        else {
+            // If no project is found, throw an error
+            throw new Error(`Project with name "${project_name}" doesn't exist.`);
+        }
     }
-    throw new Error("Invalid project");
+    catch (error) {
+        // Handle the error
+        console.error("Error in fetching project configuration:", error);
+        throw error; // Rethrow the error after logging it
+    }
 }

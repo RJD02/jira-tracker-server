@@ -13,11 +13,54 @@ datasource db {
   url      = env("DB_URL")
 }
 
-
-
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
-  password  String   // Hashed password
+  password  String // Hashed password
   createdAt DateTime @default(now())
+}
+
+model Issue {
+  id          String      @id
+  key         String
+  summary     String
+  status      String
+  assignee    String
+  updated_at  DateTime @default(now())
+  created_at  DateTime
+  description String?
+  worklog     String?
+  fields      String?
+  project_id  String 
+  project     Project2  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+}
+
+
+model SiteUrlTable{
+  site_id Int @id @default(autoincrement())
+  site_url String
+  projects Project2[]
+}
+
+model Project2 {
+  id String @id
+  site_id Int
+  baseurl SiteUrlTable  @relation(fields: [site_id], references: [site_id])
+  label   String   @unique
+  project_key String
+  board String?
+  email String
+  token String
+  jiraUsers JiraUser[]
+  updated_at  DateTime @default(now())
+  issues Issue[]
+}
+
+model JiraUser {
+  id        Int       @id @default(autoincrement())
+  user_name String
+  jira_id   String    @unique // This is the unique identifier for the Jira user
+  role      String
+  updated_at DateTime  @default(now())
+  projects  Project2[]
 }
