@@ -1,23 +1,29 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-export async function updateNeed(label:string) {
-    const project = await prisma.project2.findMany({
+export async function updateNeed(label: string) {
+    const project = await prisma.project2.findFirst({
         where: {
             label: label
-        },
-        include: {
-            issues: true, // Include related issues
-            baseurl: true
         }
     });
-    // console.log(project)
-    if (project[0].issues.length === 0)
-    {
-        return {result: true, lastUpdatedTime: new Date()}
-    }
-    const lastUpdatedTime = (project[0].issues[0].updated_at)
     const currentTime = new Date();
+    if (project === null) return {
+        result: true, lastUpdatedTime: currentTime
+    }
+    const issues = await prisma.issue.findFirst({
+        where: {
+            project_id: project.id
+        },
+        orderBy: {
+            updated_at: 'desc'
+        }
+    })
+    // console.log(project)
+    if (issues === null) {
+        return { result: true, lastUpdatedTime: new Date() }
+    }
+    const lastUpdatedTime = (issues.updated_at)
 
     // Calculate the difference in time between now and the last updated time
     const timeDifference = currentTime.getTime() - new Date(lastUpdatedTime).getTime(); // in milliseconds
