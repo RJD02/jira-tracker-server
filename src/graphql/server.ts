@@ -1,6 +1,5 @@
 import { ApolloServer } from "@apollo/server";
 
-import express from "express";
 import { PrismaClient, User } from "@prisma/client";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { applyMiddleware } from "graphql-middleware"; // To apply graphql-shield
@@ -19,15 +18,11 @@ export interface Context {
 // Middleware to authenticate user based on token
 export const getUserFromToken = async (token: string): Promise<User | null> => {
   try {
-    console.log("inside get user from token", token);
     if (token) {
       //remove Bearer
       token = token.replace("Bearer ", "");
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-      console.log(decoded);
-      console.log(
-        await prisma.user.findUnique({ where: { id: decoded.userId } })
-      );
+
       return await prisma.user.findUnique({ where: { id: decoded.userId } });
     }
     return null;

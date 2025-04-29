@@ -9,7 +9,7 @@ async function configuration_db(project_name) {
     try {
         const projects = await exports.prisma.project2.findMany({
             where: {
-                label: project_name
+                label: project_name,
             },
             include: {
                 baseurl: true,
@@ -35,7 +35,6 @@ async function configuration_db(project_name) {
                 credential: creds, // Access the token from the first project
                 team: jiraUsersMapped, // The mapped Jira users data
             };
-            // console.log(result); // This will log the returned object
             return result;
         }
         else {

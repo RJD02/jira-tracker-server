@@ -16,13 +16,10 @@ const permission_1 = require("./permission");
 // Middleware to authenticate user based on token
 const getUserFromToken = async (token) => {
     try {
-        console.log("inside get user from token", token);
         if (token) {
             //remove Bearer
             token = token.replace("Bearer ", "");
             const decoded = jsonwebtoken_1.default.verify(token, config_1.JWT_SECRET);
-            console.log(decoded);
-            console.log(await resolvers_1.prisma.user.findUnique({ where: { id: decoded.userId } }));
             return await resolvers_1.prisma.user.findUnique({ where: { id: decoded.userId } });
         }
         return null;

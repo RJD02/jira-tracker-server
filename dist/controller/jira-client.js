@@ -13,13 +13,24 @@ const prisma = new client_1.PrismaClient();
 //updation code
 const fetchProjectJiraData = async (extractProject, last_update_time) => {
     const { board, credential, team, baseurl } = await (0, config_1.configuration_db)(extractProject); // Assuming project_id is fetched here
-    const project_ = await prisma.project2.findMany({
+    const project_ = await prisma.project2.findFirst({
         where: {
-            label: extractProject
-        }
+            label: extractProject,
+        },
     });
-    console.log(project_[0].id);
-    const project_id = project_[0].id;
+    const project_id = project_?.id;
+    if (!project_id) {
+        throw new Error(`Project ID not found for project: ${extractProject}`);
+    }
+    // update the project's updated_at field in db
+    await prisma.project2.update({
+        where: {
+            id: project_id,
+        },
+        data: {
+            updated_at: new Date(),
+        },
+    });
     let issuesToTrack = null;
     const jira = new jira_client_1.default(credential);
     try {
@@ -60,7 +71,6 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         } while (totalLoaded < issuesToTrack.total);
         // Fetch worklogs in parallel for batch size
         if (extractProject.toLocaleLowerCase() === "salam") {
-            console.log("Extracting Worklogs");
             const BATCH_SIZE = 15;
             const fetchWorklogsInBatches = async (issues) => {
                 for (let i = 0; i < issues.length; i += BATCH_SIZE) {
@@ -81,29 +91,31 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
                 id: issue.self,
                 key: issue.key,
                 summary: issue.fields.summary,
-                status: issue.fields.status?.statusCategory?.name || '',
-                assignee: issue.fields.assignee?.displayName || '',
+                status: issue.fields.status?.statusCategory?.name || "",
+                assignee: issue.fields.assignee?.displayName || "",
                 updated_at: new Date(),
                 created_at: new Date(issue.fields.created),
-                description: issue.fields.description || '',
-                worklog: JSON.stringify(issue.fields.worklog) || '',
-                fields: JSON.stringify(issue.fields) || '', // You may want to adjust what fields you store here
-                project_id: project_id, // Add the project_id here
+                description: issue.fields.description || "",
+                worklog: JSON.stringify(issue.fields.worklog) || "",
+                fields: JSON.stringify(issue.fields) || "", // You may want to adjust what fields you store here
+                project_id: project_id, // Ensure project_id is a string
             };
         });
         // Retrieve existing issues from the database based on keys
         const existingIssues = await prisma.issue.findMany({
             where: {
-                key: { in: issueDataToInsert.map(issue => issue.key) },
+                key: { in: issueDataToInsert.map((issue) => issue.key) },
             },
         });
-        const existingIssueKeys = new Set(existingIssues.map(issue => issue.key));
+        const existingIssueKeys = new Set(existingIssues.map((issue) => issue.key));
         // Split issues into new and updated
-        const newIssues = issueDataToInsert.filter(issue => !existingIssueKeys.has(issue.key));
-        const updatedIssues = issueDataToInsert.filter(issue => existingIssueKeys.has(issue.key) &&
+        const newIssues = issueDataToInsert.filter((issue) => !existingIssueKeys.has(issue.key));
+        const updatedIssues = issueDataToInsert.filter((issue) => existingIssueKeys.has(issue.key) &&
             // Check if updated_at is older than 30 minutes
-            existingIssues.some(existingIssue => existingIssue.key === issue.key &&
-                (new Date().getTime() - new Date(existingIssue.updated_at).getTime()) >= 2 * 60 * 1000 // 30 minutes
+            existingIssues.some((existingIssue) => existingIssue.key === issue.key &&
+                new Date().getTime() -
+                    new Date(existingIssue.updated_at).getTime() >=
+                    2 * 60 * 1000 // 30 minutes
             ));
         // Insert new issues into the database
         if (newIssues.length > 0) {

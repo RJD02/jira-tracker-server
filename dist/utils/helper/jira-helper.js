@@ -27,8 +27,8 @@ const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done,
 async function jiraRecentActivityFilter(teamMembers, updatedTime, project, board) {
     const key = await prisma.project2.findUnique({
         where: {
-            label: project
-        }
+            label: project,
+        },
     });
     const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
     // const recentlyChanged = `updated >=  startOfDay(${Math.max(

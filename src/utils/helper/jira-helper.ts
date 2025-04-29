@@ -1,9 +1,8 @@
 import { TeamMember } from "../../types/team";
 import { Issue } from "../../types/types";
 import { getLastNBusinessDays } from "../utils";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-
 
 export function resolveCommentUsers(
   issue: Issue,
@@ -15,7 +14,7 @@ export function resolveCommentUsers(
       return "@" + (usermap[id] || id);
     });
   });
-  return issue
+  return issue;
 }
 
 export function resolveUsers(
@@ -35,13 +34,13 @@ export async function jiraRecentActivityFilter(
   teamMembers: TeamMember[],
   updatedTime: Date,
   project: string,
-  board?: string,
+  board?: string
 ) {
   const key = await prisma.project2.findUnique({
-    where:{
-      label: project
-    }
-  })
+    where: {
+      label: project,
+    },
+  });
   const [_, businessDayCount] = getLastNBusinessDays(1);
   // const recentlyChanged = `updated >=  startOfDay(${Math.max(
   //   Math.min(-1 * businessDayCount, -1),

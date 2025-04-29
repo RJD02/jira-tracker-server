@@ -6,27 +6,16 @@ const prisma = new client_1.PrismaClient();
 async function updateNeed(label) {
     const project = await prisma.project2.findFirst({
         where: {
-            label: label
-        }
+            label: label,
+        },
     });
     const currentTime = new Date();
     if (project === null)
         return {
-            result: true, lastUpdatedTime: currentTime
+            result: true,
+            lastUpdatedTime: currentTime,
         };
-    const issues = await prisma.issue.findFirst({
-        where: {
-            project_id: project.id
-        },
-        orderBy: {
-            updated_at: 'desc'
-        }
-    });
-    // console.log(project)
-    if (issues === null) {
-        return { result: true, lastUpdatedTime: new Date() };
-    }
-    const lastUpdatedTime = (issues.updated_at);
+    const lastUpdatedTime = project.updated_at;
     // Calculate the difference in time between now and the last updated time
     const timeDifference = currentTime.getTime() - new Date(lastUpdatedTime).getTime(); // in milliseconds
     // Convert milliseconds to minutes
@@ -35,11 +24,11 @@ async function updateNeed(label) {
     if (minutesDifference <= 30) {
         console.log(`time difference less than 30 mins for ${label}`);
         // return false
-        return { result: false, lastUpdatedTime: lastUpdatedTime };
+        return { result: false, lastUpdatedTime };
     }
     else {
         console.log(`time difference greater than 30 mins for ${label}`);
         // return true
-        return { result: true, lastUpdatedTime: lastUpdatedTime };
+        return { result: true, lastUpdatedTime };
     }
 }
