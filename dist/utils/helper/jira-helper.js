@@ -57,7 +57,7 @@ async function jiraRecentActivityFilter(teamMembers, updatedTime, project, board
     const teamFilter = board
         ? `Board[Dropdown] = "${board}" and ${assignee}`
         : assignee;
-    const targetWorkItems = `(project = ${key?.project_key}) and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
+    const targetWorkItems = `(project = "${key?.project_key}") and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
     return targetWorkItems;
 }
 const createTeamMap = (team) => team.reduce((acc, member) => {

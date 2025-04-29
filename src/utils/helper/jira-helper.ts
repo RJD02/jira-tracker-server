@@ -74,7 +74,7 @@ export async function jiraRecentActivityFilter(
   const teamFilter = board
     ? `Board[Dropdown] = "${board}" and ${assignee}`
     : assignee;
-  const targetWorkItems = `(project = ${key?.project_key}) and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
+  const targetWorkItems = `(project = "${key?.project_key}") and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
   return targetWorkItems;
 }
 

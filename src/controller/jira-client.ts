@@ -42,7 +42,7 @@ export const fetchProjectJiraData = async (
   const jira = new JiraApi(credential);
 
   try {
-    const filter = jiraRecentActivityFilter(
+    const filter = await jiraRecentActivityFilter(
       team,
       last_update_time,
       extractProject,
@@ -50,7 +50,7 @@ export const fetchProjectJiraData = async (
     );
     let totalLoaded = 0;
     do {
-      const records = (await jira.searchJira(await filter, {
+      const records = (await jira.searchJira(filter, {
         fields: [
           "id",
           "comment",
