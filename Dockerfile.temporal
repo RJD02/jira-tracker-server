@@ -1,0 +1,14 @@
+# Base Image: use the official Temporal auto-setup image
+FROM temporalio/auto-setup:1.21
+
+# Set working directory
+WORKDIR /etc/temporal
+
+# Optional: copy your custom dynamic config if you have one
+# COPY config/dynamicconfig/development.yaml config/dynamicconfig/development.yaml
+
+# Expose the Temporal gRPC port
+EXPOSE 7233
+
+# Command to start Temporal server
+CMD ["temporal-server", "start-dev"]

@@ -1,0 +1,10 @@
+# Base Image: use the official Temporal UI image
+FROM temporalio/ui:latest
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Expose the UI port
+EXPOSE 8080
+
+# (The image automatically starts the Temporal UI server.)
