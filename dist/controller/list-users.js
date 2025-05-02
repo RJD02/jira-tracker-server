@@ -6,7 +6,6 @@ const client_1 = require("@prisma/client");
 exports.prisma = new client_1.PrismaClient();
 async function listUsers(project_id) {
     try {
-        // console.log(project_id)
         const projectWithUsers = await exports.prisma.project2.findUnique({
             where: {
                 id: project_id,
@@ -19,10 +18,10 @@ async function listUsers(project_id) {
             console.log(`No project found with ID: ${project_id}`);
             return [];
         }
-        console.log(projectWithUsers.jiraUsers); // This will contain the list of users for the specified project
+        // This will contain the list of users for the specified project
         return projectWithUsers.jiraUsers;
     }
     catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
     }
 }

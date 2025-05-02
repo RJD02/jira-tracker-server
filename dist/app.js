@@ -15,9 +15,7 @@ async function start() {
         listen: { port },
         context: async ({ req }) => {
             // get the user token from the headers
-            console.log("Building context", req.headers.authorization);
             const token = req.headers.authorization || "";
-            console.log(token);
             const user = await (0, server_1.getUserFromToken)(token);
             return { user, prisma: resolvers_1.prisma };
         },

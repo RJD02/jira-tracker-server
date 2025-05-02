@@ -10,18 +10,17 @@ async function fetchingJiraIssues(key) {
     // Fetch the project using the label (key)
     const project = await prisma.project2.findMany({
         where: {
-            label: key
+            label: key,
         },
         include: {
             issues: true, // Include related issues
-            baseurl: true
-        }
+            baseurl: true,
+        },
     });
-    // console.log(project[0].baseurl.site_url)
     const total = await prisma.project2.count({
         where: {
-            label: key
-        }
+            label: key,
+        },
     });
     // If no project is found, handle the error
     if (!project || project.length === 0) {
@@ -31,8 +30,8 @@ async function fetchingJiraIssues(key) {
     // Fetch existing issues related to the project
     const existingIssues = await prisma.issue.findMany({
         where: {
-            project_id: project[0].id
-        }
+            project_id: project[0].id,
+        },
     });
     // If no issues are found, handle the error
     if (!existingIssues || existingIssues.length === 0) {
@@ -41,21 +40,23 @@ async function fetchingJiraIssues(key) {
     }
     let issues;
     // Assuming you want to extract the fields data as JSON
-    const issueData = existingIssues.map(issue => {
+    const issueData = existingIssues.map((issue) => {
         // Check if fields is not null, then parse it, otherwise set to an empty object
         let fieldsData;
         try {
             // If fields is a non-null string, parse it, otherwise fallback to an empty object
             fieldsData = issue.fields ? JSON.parse(issue.fields) : {};
             issues = {
-                expand: '',
+                expand: "",
                 id: issue.id,
                 key: issue.key,
                 self: issue.id,
                 url: `https://${project[0].baseurl.site_url}/browse/${issue.key}`,
-                fields: fieldsData
+                fields: fieldsData,
             };
-            if (issue.worklog === null || issue.worklog === undefined || issue.worklog === '') {
+            if (issue.worklog === null ||
+                issue.worklog === undefined ||
+                issue.worklog === "") {
                 issue.worklog = fieldsData.worklog;
             }
             issues.fields.description = (0, jira_helper_1.resolveUsers)(fieldsData.description, (0, jira_helper_1.createTeamMap)(team));
@@ -70,6 +71,6 @@ async function fetchingJiraIssues(key) {
     return {
         project: project[0], // Assuming only one project is found
         issues: issueData,
-        total: issueData.length
+        total: issueData.length,
     };
 }

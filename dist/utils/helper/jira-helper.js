@@ -27,8 +27,8 @@ const currentSprint = `(sprint in openSprints() and statusCategory NOT IN (Done,
 async function jiraRecentActivityFilter(teamMembers, updatedTime, project, board) {
     const key = await prisma.project2.findUnique({
         where: {
-            label: project
-        }
+            label: project,
+        },
     });
     const [_, businessDayCount] = (0, utils_1.getLastNBusinessDays)(1);
     // const recentlyChanged = `updated >=  startOfDay(${Math.max(
@@ -57,7 +57,7 @@ async function jiraRecentActivityFilter(teamMembers, updatedTime, project, board
     const teamFilter = board
         ? `Board[Dropdown] = "${board}" and ${assignee}`
         : assignee;
-    const targetWorkItems = `(project = ${key?.project_key}) and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
+    const targetWorkItems = `(project = "${key?.project_key}") and ${teamFilter} and (${recentlyChanged} or ${currentSprint} or ${itemstoClose})`;
     return targetWorkItems;
 }
 const createTeamMap = (team) => team.reduce((acc, member) => {

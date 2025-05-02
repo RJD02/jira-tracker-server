@@ -8,26 +8,24 @@ const jira_client_1 = __importDefault(require("jira-client"));
 async function GetListOfProjects(baseurl, token, username) {
     try {
         const jira = await new jira_client_1.default({
-            protocol: 'https',
+            protocol: "https",
             host: baseurl,
             username: username,
             password: token,
-            apiVersion: '2',
-            strictSSL: true
+            apiVersion: "2",
+            strictSSL: true,
         });
         const projects = await jira.listProjects();
-        console.log(projects);
         const projectArray = projects.map((project) => {
             return {
                 id: project.self,
                 name: project.name,
-                key: project.key
+                key: project.key,
             };
         });
-        // console.log('Project Array:', projectArray);
         return projectArray;
     }
     catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error("Error fetching projects:", error);
     }
 }

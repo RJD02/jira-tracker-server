@@ -18,7 +18,7 @@ const list_projects_1 = require("../controller/list-projects");
 const jira_list_user_in_project_1 = require("../controller/jira-list-user-in-project");
 const update_checker_1 = require("../controller/update-checker");
 exports.prisma = new client_1.PrismaClient();
-const { GraphQLError } = require('graphql');
+const { GraphQLError } = require("graphql");
 exports.resolvers = {
     Query: {
         me: async (_, __, context) => {
@@ -30,7 +30,7 @@ exports.resolvers = {
         issues: async function (_, { project, forced = false }) {
             console.log("Resolver is running on", project);
             const checking_last_update = await (0, update_checker_1.updateNeed)(project);
-            if (checking_last_update.result || forced) {
+            if (forced || checking_last_update.result) {
                 return (0, jira_client_1.fetchProjectJiraData)(project, checking_last_update.lastUpdatedTime);
             }
             else {
@@ -48,23 +48,23 @@ exports.resolvers = {
                 const data = await (0, jira_list_user_in_project_1.listUsersForProject)(baseurl, token, username, userKey);
                 // If no data is returned, throw an error
                 if (!data || data.length === 0) {
-                    throw new Error('No users found');
+                    throw new Error("No users found");
                 }
                 // Map to return the list of users
                 const users = data.map((user) => ({
-                    account_id: user.accountId || '', // Adjust field based on your requirements
-                    emailAddress: user.emailAddress || '',
-                    displayName: user.displayName || '',
+                    account_id: user.accountId || "", // Adjust field based on your requirements
+                    emailAddress: user.emailAddress || "",
+                    displayName: user.displayName || "",
                     active: user.active !== undefined ? user.active : false, // Default to false if not present
                 }));
                 return users;
             }
             catch (error) {
-                console.error('Error in resolver:', error);
-                throw new Error('Failed to fetch user');
+                console.error("Error in resolver:", error);
+                throw new Error("Failed to fetch user");
             }
         },
-        jiraprojects: async function (_, { baseurl, token, username }) {
+        jiraprojects: async function (_, { baseurl, token, username, }) {
             try {
                 // Call the GetListOfProjects function with dynamic arguments
                 const projects = await (0, list_projects_1.GetListOfProjects)(baseurl, token, username);
@@ -72,15 +72,15 @@ exports.resolvers = {
                 return projects;
             }
             catch (error) {
-                console.error('Error fetching projects:', error);
-                throw new Error('Failed to fetch projects');
+                console.error("Error fetching projects:", error);
+                throw new Error("Failed to fetch projects");
             }
         },
         allProjects: async () => {
             try {
                 const projectDetails = await (0, list_projects_db_1.allProjectsInDb)();
                 // console.log("Retrieving Projects");
-                // console.log(projectDetails); 
+                // console.log(projectDetails);
                 return projectDetails; // This should now return valid project details
             }
             catch (error) {
@@ -98,7 +98,7 @@ exports.resolvers = {
                     return []; // Or handle this case differently if you need
                 }
                 // Map the users to the expected format
-                const formattedUsers = users.map(user => ({
+                const formattedUsers = users.map((user) => ({
                     id: user.id, // Map the user id (or use jira_id if that should be the 'id' field)
                     name: user.user_name, // Map the user name
                     jira_id: user.jira_id, // You can add the actual email if it's available in your data
@@ -139,7 +139,7 @@ exports.resolvers = {
                             some: { id: project_.id },
                         },
                     },
-                    data: {}
+                    data: {},
                 });
                 // Delete the project
                 const deletedProject = await exports.prisma.project2.delete({
@@ -231,12 +231,18 @@ exports.resolvers = {
                         });
                     }
                 }));
-                return { success: true, message: "User was inserted or updated successfully" };
+                return {
+                    success: true,
+                    message: "User was inserted or updated successfully",
+                };
             }
             catch (error) {
                 console.error("Error inserting or updating user data:", error);
                 // Return the error message that contains "Project not registered"
-                return { success: false, message: "User not inserted or updated successfully" };
+                return {
+                    success: false,
+                    message: "User not inserted or updated successfully",
+                };
             }
         },
         // Resolver for createSiteUrl
@@ -255,7 +261,7 @@ exports.resolvers = {
             }
         },
         // Resolver for createProject2
-        createProject2: async (_, { id, site_id, label, project_key, email, token, board }) => {
+        createProject2: async (_, { id, site_id, label, project_key, email, token, board, }) => {
             try {
                 // Check if the site exists
                 const siteUrl = await exports.prisma.siteUrlTable.findUnique({

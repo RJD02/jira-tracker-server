@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: temporal-server
+    env: docker
+    dockerfilePath: ./Dockerfile.temporal
+    envVars:
+      - key: DB
+        value: postgresql
+      - key: POSTGRES_USER
+        value: ${POSTGRES_USER}
+      - key: POSTGRES_PWD
+        value: ${POSTGRES_PWD}
+      - key: POSTGRES_SEEDS
+        value: ${POSTGRES_SEEDS}
+      - key: POSTGRES_PORT
+        value: ${POSTGRES_PORT}
+      - key: POSTGRES_DB
+        value: ${POSTGRES_DB}
+      - key: ENABLE_ES
+        value: false
+    plan: standard
+    autoDeploy: true
+
+  - type: web
+    name: temporal-ui
+    env: docker
+    dockerfilePath: ./Dockerfile.ui
+    envVars:
+      - key: TEMPORAL_ADDRESS
+        value: temporal-server:7233
+    plan: standard
+    autoDeploy: true
