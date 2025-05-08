@@ -66,10 +66,6 @@ export async function jiraRecentActivityFilter(
   const developers = teamMembers.filter(
     (member) => member.role === "developer"
   );
-  // const assignee = `(
-  //  assignee in (${developers.map((member) => member.id).join(",")}) or
-  //  assignee was in (${developers.map((member) => member.id).join(",")})
-  //  )`;
   const developerIds = developers.map((member) => member.id).filter(Boolean);
   let assignee = "";
   if (developerIds.length > 0) {
