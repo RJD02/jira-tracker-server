@@ -55,10 +55,11 @@ export const resolvers = {
       console.log("Resolver is running on", project);
       const checking_last_update = await updateNeed(project);
       if (forced || checking_last_update.result) {
-        return fetchProjectJiraData(
+        const jiraProjectDetails = await fetchProjectJiraData(
           project,
           checking_last_update.lastUpdatedTime
         );
+        return jiraProjectDetails;
       } else {
         const ans = await fetchingJiraIssues(project);
         return ans;

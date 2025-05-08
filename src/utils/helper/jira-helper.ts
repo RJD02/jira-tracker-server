@@ -66,10 +66,20 @@ export async function jiraRecentActivityFilter(
   const developers = teamMembers.filter(
     (member) => member.role === "developer"
   );
-  const assignee = `(
-   assignee in (${developers.map((member) => member.id).join(",")}) or 
-   assignee was in (${developers.map((member) => member.id).join(",")})
-   )`;
+  // const assignee = `(
+  //  assignee in (${developers.map((member) => member.id).join(",")}) or
+  //  assignee was in (${developers.map((member) => member.id).join(",")})
+  //  )`;
+  const developerIds = developers.map((member) => member.id).filter(Boolean);
+  let assignee = "";
+  if (developerIds.length > 0) {
+    assignee = `(
+    assignee in (${developerIds.join(",")}) or 
+    assignee was in (${developerIds.join(",")})
+  )`;
+  } else {
+    assignee = "(assignee is not EMPTY)"; // fallback to avoid syntax error
+  }
 
   const teamFilter = board
     ? `Board[Dropdown] = "${board}" and ${assignee}`
