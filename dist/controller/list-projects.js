@@ -1,28 +1,28 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetListOfProjects = GetListOfProjects;
-const jira_client_1 = __importDefault(require("jira-client"));
+// import JiraClient from "jira-client";
+const jira_js_1 = require("jira.js");
+// const { Version3Client } =  import('jira.js');
 async function GetListOfProjects(baseurl, token, username) {
     try {
-        const jira = await new jira_client_1.default({
-            protocol: "https",
-            host: baseurl,
-            username: username,
-            password: token,
-            apiVersion: "2",
-            strictSSL: true,
+        const jira = new jira_js_1.Version3Client({
+            host: "https://" + baseurl,
+            authentication: {
+                basic: {
+                    email: username,
+                    apiToken: token,
+                },
+            },
         });
-        const projects = await jira.listProjects();
-        const projectArray = projects.map((project) => {
-            return {
-                id: project.self,
-                name: project.name,
-                key: project.key,
-            };
-        });
+        // console.log("Jira instance created: ", jira);
+        const projects = await jira.projects.searchProjects();
+        // console.log("Projects fetched: ", projects);
+        const projectArray = projects.values.map((project) => ({
+            id: project.id,
+            name: project.name,
+            key: project.key,
+        }));
         return projectArray;
     }
     catch (error) {

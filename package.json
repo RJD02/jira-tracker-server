@@ -34,7 +34,7 @@
     "express": "^4.21.0",
     "graphql": "^16.9.0",
     "graphql-shield": "^7.6.5",
-    "jira-client": "^8.2.2",
+    "jira.js": "^5.2.2",
     "jsonwebtoken": "^9.0.2",
     "prisma-client": "^0.0.0",
     "sqlite3": "^5.1.7"

@@ -9,10 +9,28 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 function resolveCommentUsers(issue, usermap) {
     issue.fields.comment.comments.forEach((comment) => {
-        const regex = /\[~accountid:([^\]]+)\]/g;
-        comment.body = comment.body?.replace(regex, (_, id) => {
-            return "@" + (usermap[id] || id);
-        });
+        if (comment.body &&
+            typeof comment.body === "object" &&
+            "content" in comment.body) {
+            const body = comment.body;
+            body.content?.forEach((contentItem) => {
+                if (typeof contentItem.text === "string") {
+                    const regex = /\[~accountid:([^\]]+)\]/g;
+                    contentItem.text = contentItem.text.replace(regex, (_, id) => {
+                        return "@" + (usermap[id] || id);
+                    });
+                }
+            });
+        }
+        else if (typeof comment.body === "string") {
+            const regex = /\[~accountid:([^\]]+)\]/g;
+            comment.body = comment.body.replace(regex, (_, id) => {
+                return "@" + (usermap[id] || id);
+            });
+        }
+        else {
+            console.warn("Comment body is not in the expected format:", comment.body);
+        }
     });
     return issue;
 }

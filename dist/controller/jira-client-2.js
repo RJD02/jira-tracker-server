@@ -124,7 +124,7 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         let nextPageToken = null;
         let isLast = false;
         let allIssues = [];
-        // console.log(jql);
+        console.log(jql);
         do {
             const bodyData = {
                 jql,
@@ -224,7 +224,7 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         // Add URL and resolve users if needed
         issuesToTrack.issues.forEach((issue) => {
             issue.url = `${baseurl}/browse/${issue.key}`;
-            issue.fields.issuetype.description = (0, jira_helper_1.resolveUsers)(issue.fields.issuetype.description, (0, jira_helper_1.createTeamMap)(team));
+            issue.fields.description = (0, jira_helper_1.resolveUsers)(issue.fields.description, (0, jira_helper_1.createTeamMap)(team));
             (0, jira_helper_1.resolveCommentUsers)(issue, (0, jira_helper_1.createTeamMap)(team));
         });
         console.log("Total issues processed:", issuesToTrack.issues.length);
@@ -236,3 +236,5 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
     }
 };
 exports.fetchProjectJiraData = fetchProjectJiraData;
+// Run the function
+(0, exports.fetchProjectJiraData)("NPM", new Date("2025-09-05T00:00:00.000Z"));

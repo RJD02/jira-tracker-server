@@ -124,7 +124,7 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         let nextPageToken = null;
         let isLast = false;
         let allIssues = [];
-        // console.log(jql);
+        console.log(jql);
         do {
             const bodyData = {
                 jql,
@@ -179,6 +179,17 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         }
         // Map the issues to Prisma format and include project_id
         const issueDataToInsert = issuesToTrack.issues.map((issue) => {
+            console.log(typeof issue.self, "issue.self", issue.self);
+            console.log(typeof issue.key, "issue.key", issue.key);
+            console.log(typeof issue.fields.summary, "issue.fields.summary", issue.fields.summary);
+            console.log(typeof issue.fields.status?.statusCategory?.name || "", "issue.fields.status?.statusCategory?.name", issue.fields.status?.statusCategory?.name || "");
+            console.log(typeof issue.fields.assignee?.displayName || "", "issue.fields.assignee?.displayName", issue.fields.assignee?.displayName || "");
+            console.log(typeof new Date(issue.fields.created), "new Date(issue.fields.created)", new Date(issue.fields.created));
+            console.log(typeof issue.fields.issuetype.description || "", "issue.fields.issuetype.description", issue.fields.issuetype.description || "");
+            console.log(typeof JSON.stringify(issue.fields.worklog) || "", "JSON.stringify(issue.fields.worklog)", JSON.stringify(issue.fields.worklog) || "");
+            console.log(typeof JSON.stringify(issue.fields) || "", "issue.fields", JSON.stringify(issue.fields) || "");
+            console.log(typeof project_.id, "project_.id", project_.id);
+            console.log("\n\n");
             return {
                 id: issue.self,
                 key: issue.key,
@@ -236,3 +247,5 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
     }
 };
 exports.fetchProjectJiraData = fetchProjectJiraData;
+// Run the function
+(0, exports.fetchProjectJiraData)("NPM", new Date("2025-09-05T00:00:00.000Z"));

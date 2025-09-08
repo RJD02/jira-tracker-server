@@ -1,97 +1,222 @@
-import JiraApi from "jira-client";
-import { JiraResponse, Issue } from "../types/types";
-// import { getConfig, PROJECT } from "../config/config";
-import {
-  jiraRecentActivityFilter,
-  createTeamMap,
-  resolveCommentUsers,
-  resolveUsers,
-} from "../utils/helper/jira-helper";
+// // import JiraApi from "jira-client";
+// // import { JiraResponse, Issue } from "../types/types";
+// // // import { getConfig, PROJECT } from "../config/config";
+// // import {
+// //   jiraRecentActivityFilter,
+// //   createTeamMap,
+// //   resolveCommentUsers,
+// //   resolveUsers,
+// // } from "../utils/helper/jira-helper";
+// // import { configuration_db } from "../config/config";
+// // import { PrismaClient } from "@prisma/client";
+// // const prisma = new PrismaClient();
+// // //updation code
+
+
+
+
+// import fetch from 'node-fetch';
+// import { configuration_db } from "../config/config";
+// import { PrismaClient } from "@prisma/client";
+// import { jiraRecentActivityFilter } from "../utils/helper/jira-helper";
+
+// const prisma = new PrismaClient();
+
+// export const fetchProjectJiraData = async (
+//   extractProject: string,
+//   last_update_time: Date
+// ) => {
+//   try {
+//     const { board, credential, team, baseurl } = await configuration_db(extractProject);
+
+//     const project_ = await prisma.project2.findFirst({
+//       where: { label: extractProject },
+//     });
+
+//     if (!project_) throw new Error(`Project not found: ${extractProject}`);
+
+//     // Update the updated_at timestamp
+//     await prisma.project2.update({
+//       where: { id: project_.id },
+//       data: { updated_at: new Date() },
+//     });
+
+//     // Prepare your JQL query
+//     const jql = await jiraRecentActivityFilter(team, last_update_time, extractProject, board);
+
+//     const maxResults = 50;
+//     let startAt = 0;
+//     let total = 0;
+//     let allIssues: any[] = [];
+
+//     // Define fields you want to fetch
+//     const fields = [
+//       "id", "comment", "worklog", "key", "summary", "status", "assignee",
+//       "updated", "priority", "labels", "issuetype", "reporter",
+//       "created", "duedate", "description"
+//     ];
+
+//     // Base64 encode credentials for Basic Auth
+//     const auth = Buffer.from(`${credential.username}:${credential.password}`).toString('base64');
+//     console.log(jql);
+//     do {
+//       // Build POST body as JSON string
+//       const bodyData = JSON.stringify({
+//         jql,
+//         fields,
+//         // maxResults,
+//         // startAt,
+//         // You can add other optional params if needed:
+//         // expand: [],
+//         // properties: [],
+//         // fieldsByKeys: true,
+//       });
+
+//       const url = `${credential.protocol}://${credential.host}/rest/api/3/search/jql`;
+//       // Fetch data from Jira using POST
+//       const response = await fetch(url, {
+//         method: 'POST',
+//         headers: {
+//           'Authorization': `Basic ${auth}`,
+//           'Accept': 'application/json',
+//           'Content-Type': 'application/json',
+//         },
+//         body: bodyData,
+//       });
+
+//       console.log(bodyData)
+
+//       if (!response.ok) {
+//         const errorText = await response.text();
+//         throw new Error(`Jira API error: ${response.status} ${response.statusText} - ${errorText}`);
+//       }
+
+//       const data = await response.json();
+
+//       if (data.issues && data.issues.length) {
+//         allIssues.push(...data.issues);
+//       }
+
+//       total = data.total || 0;
+//       startAt += maxResults;
+
+//     } while (startAt < total);
+
+//     console.log("Total issues fetched via POST fetch():", allIssues.length);
+//     // console.log(allIssues)
+//     return allIssues;
+
+//   } catch (error: any) {
+//     console.error("Error fetching Jira issues with POST fetch:", error.message || error);
+//     throw error;
+//   }
+// };
+
+
+// fetchProjectJiraData("NPM",new Date("2025-09-05T16:00:00.000Z"))
+
+
+
+
+
+import fetch from 'node-fetch';
 import { configuration_db } from "../config/config";
 import { PrismaClient } from "@prisma/client";
+import { createTeamMap, jiraRecentActivityFilter, resolveCommentUsers, resolveUsers } from "../utils/helper/jira-helper";
+
 const prisma = new PrismaClient();
-//updation code
 
 export const fetchProjectJiraData = async (
   extractProject: string,
   last_update_time: Date
 ) => {
-  const { board, credential, team, baseurl } = await configuration_db(
-    extractProject
-  ); // Assuming project_id is fetched here
-  const project_ = await prisma.project2.findFirst({
-    where: {
-      label: extractProject,
-    },
-  });
-
-  const project_id = project_?.id;
-  if (!project_id) {
-    throw new Error(`Project ID not found for project: ${extractProject}`);
-  }
-  // update the project's updated_at field in db
-  await prisma.project2.update({
-    where: {
-      id: project_id,
-    },
-    data: {
-      updated_at: new Date(),
-    },
-  });
-  let issuesToTrack: JiraResponse | null = null;
-  const jira = new JiraApi(credential);
-
   try {
-    const filter = await jiraRecentActivityFilter(
-      team,
-      last_update_time,
-      extractProject,
-      board
-    );
-    let totalLoaded = 0;
+    const { board, credential, team, baseurl } = await configuration_db(extractProject);
+
+    const project_ = await prisma.project2.findFirst({
+      where: { label: extractProject },
+    });
+
+    if (!project_) throw new Error(`Project not found: ${extractProject}`);
+
+    await prisma.project2.update({
+      where: { id: project_.id },
+      data: { updated_at: new Date() },
+    });
+
+    const jql = await jiraRecentActivityFilter(team, last_update_time, extractProject, board);
+
+    const fields = [
+      "id", "comment", "worklog", "key", "summary", "status", "assignee",
+      "updated", "priority", "labels", "issuetype", "reporter",
+      "created", "duedate", "description"
+    ];
+
+    const auth = Buffer.from(`${credential.username}:${credential.password}`).toString('base64');
+    const url = `${credential.protocol}://${credential.host}/rest/api/3/search/jql`;
+
+    let nextPageToken: string | null = null;
+    let isLast = false;
+    let allIssues: any[] = [];
+    // console.log(jql);
     do {
-      const records = (await jira.searchJira(filter, {
-        fields: [
-          "id",
-          "comment",
-          "worklog",
-          "key",
-          "summary",
-          "status",
-          "assignee",
-          "updated",
-          "priority",
-          "labels",
-          "issuetype",
-          "reporter",
-          "created",
-          "duedate",
-          "description",
-          "parent",
-          "statusCategory",
-        ],
-        maxResults: 150,
-        startAt: totalLoaded,
-      })) as JiraResponse;
+      const bodyData: any = {
+        jql,
+        fields,
+      };
 
-      if (!issuesToTrack) {
-        issuesToTrack = records;
-      } else {
-        issuesToTrack.issues.push(...records.issues);
-        issuesToTrack.maxResults += records.issues.length;
+      if (nextPageToken) {
+        bodyData.nextPageToken = nextPageToken;
       }
-      totalLoaded += records.issues.length;
-    } while (totalLoaded < issuesToTrack.total);
 
-    // Fetch worklogs in parallel for batch size
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Jira API error: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.issues && data.issues.length) {
+        allIssues.push(...data.issues);
+      }
+
+      isLast = data.isLast ?? true; // default to true if missing
+      nextPageToken = data.nextPageToken ?? null;
+
+    } while (!isLast && nextPageToken);
+
+    console.log("Total issues fetched:", allIssues.length);
+
+    const issuesToTrack = { issues: allIssues, total: allIssues.length };
+
+    // Fetch worklogs in parallel for batch size (specific to 'salam' project)
     if (extractProject.toLocaleLowerCase() === "salam") {
       const BATCH_SIZE = 15;
-      const fetchWorklogsInBatches = async (issues: Issue[]) => {
+      const fetchWorklogsInBatches = async (issues: any[]) => {
         for (let i = 0; i < issues.length; i += BATCH_SIZE) {
           const batch = issues.slice(i, i + BATCH_SIZE);
           const worklogPromises = batch.map(async (issue) => {
-            const worklogs = await jira.getIssueWorklogs(issue.id);
-            issue.fields.worklog = worklogs as any;
+            const worklogs = await fetch(
+              `${credential.protocol}://${credential.host}/rest/api/3/issue/${issue.id}/worklog`,
+              {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Basic ${auth}`,
+                  'Accept': 'application/json',
+                },
+              }
+            ).then((res) => res.json());
+            issue.fields.worklog = worklogs;
             return issue;
           });
           await Promise.all(worklogPromises);
@@ -102,7 +227,7 @@ export const fetchProjectJiraData = async (
 
     // Map the issues to Prisma format and include project_id
     const issueDataToInsert = issuesToTrack.issues.map((issue) => {
-      return {
+        return {
         id: issue.self,
         key: issue.key,
         summary: issue.fields.summary,
@@ -110,10 +235,10 @@ export const fetchProjectJiraData = async (
         assignee: issue.fields.assignee?.displayName || "",
         updated_at: new Date(),
         created_at: new Date(issue.fields.created),
-        description: issue.fields.description || "",
+        description: issue.fields.issuetype.description || "",
         worklog: JSON.stringify(issue.fields.worklog) || "",
-        fields: JSON.stringify(issue.fields) || "", // You may want to adjust what fields you store here
-        project_id: project_id, // Ensure project_id is a string
+        fields: JSON.stringify(issue.fields) || "",
+        project_id: project_.id,
       };
     });
 
@@ -133,7 +258,6 @@ export const fetchProjectJiraData = async (
     const updatedIssues = issueDataToInsert.filter(
       (issue) =>
         existingIssueKeys.has(issue.key) &&
-        // Check if updated_at is older than 30 minutes
         existingIssues.some(
           (existingIssue) =>
             existingIssue.key === issue.key &&
@@ -164,16 +288,18 @@ export const fetchProjectJiraData = async (
     // Add URL and resolve users if needed
     issuesToTrack.issues.forEach((issue) => {
       issue.url = `${baseurl}/browse/${issue.key}`;
-      issue.fields.description = resolveUsers(
-        issue.fields.description,
+      issue.fields.issuetype.description = resolveUsers(
+        issue.fields.issuetype.description,
         createTeamMap(team)
       );
       resolveCommentUsers(issue, createTeamMap(team));
     });
 
+    console.log("Total issues processed:", issuesToTrack.issues.length);
     return issuesToTrack;
+
   } catch (error: any) {
-    console.log(error);
+    console.error("Error fetching Jira issues:", error.message || error);
     throw error;
   }
 };

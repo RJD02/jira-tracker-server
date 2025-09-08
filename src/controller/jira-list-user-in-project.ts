@@ -11,7 +11,7 @@ export async function listUsersForProject(
   try {
     const credentials = `${username}:${token}`;
     const encodedCredentials = Buffer.from(credentials).toString("base64");
-    const url = `https://${baseurl}/rest/api/3/user/search?query=${userKey}`;
+    const url = `https://${baseurl}/rest/api/3/user?accountId=${userKey}`;
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
@@ -29,24 +29,30 @@ export async function listUsersForProject(
     }
 
     const data = await response.json();
-    const result = data.map(
-      (user: {
-        displayName: string;
-        emailAddress: string;
-        accountId: string;
-        active: boolean;
-      }) => ({
-        displayName: user.displayName || "", // Use empty string if not present
-        emailAddress: user.emailAddress || "", // Use empty string if not present
-        accountId: user.accountId || "", // Use empty string if not present
-        active: user.active !== undefined ? user.active : "", // Use empty string if not present
-      })
-    );
+    // console.log(data);
+    // console.log(typeof data);
+
+    // Ensure the result is always an array
+    const result = Array.isArray(data)
+      ? data.map((user) => ({
+          displayName: user.displayName || "",
+          emailAddress: user.emailAddress || "",
+          accountId: user.accountId || "",
+          active: user.active !== undefined ? user.active : "",
+        }))
+      : [
+          {
+            displayName: data.displayName || "",
+            emailAddress: data.emailAddress || "",
+            accountId: data.accountId || "",
+            active: data.active !== undefined ? data.active : "",
+          },
+        ];
 
     return result;
   } catch (error) {
     // Handle errors more gracefully
     console.error("Error fetching users:", error);
-    return error;
+    return [];
   }
 }
