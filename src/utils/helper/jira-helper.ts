@@ -4,12 +4,29 @@ import { getLastNBusinessDays } from "../utils";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-interface CommentBodyContent {
-  text?: string;
-}
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent: any): string {
+  if (!adfContent || !adfContent.content) {
+    return "";
+  }
 
-interface CommentBody {
-  content?: CommentBodyContent[];
+  let text = "";
+
+  function traverse(node: any) {
+    if (node.type === "text") {
+      text += node.text || "";
+    } else if (node.content && Array.isArray(node.content)) {
+      node.content.forEach(traverse);
+    }
+
+    // Add line breaks for certain block elements
+    if (node.type === "paragraph" || node.type === "heading") {
+      text += "\n";
+    }
+  }
+
+  adfContent.content.forEach(traverse);
+  return text.trim();
 }
 
 export function resolveCommentUsers(
@@ -22,17 +39,12 @@ export function resolveCommentUsers(
       typeof comment.body === "object" &&
       "content" in comment.body
     ) {
-      const body = comment.body as CommentBody;
-      body.content?.forEach((contentItem) => {
-        if (typeof contentItem.text === "string") {
-          const regex = /\[~accountid:([^\]]+)\]/g;
-          contentItem.text = contentItem.text.replace(
-            regex,
-            (_: string, id: string) => {
-              return "@" + (usermap[id] || id);
-            }
-          );
-        }
+      // Convert ADF to plain text first
+      const plainText = extractTextFromADF(comment.body);
+      // Then resolve user mentions
+      const regex = /\[~accountid:([^\]]+)\]/g;
+      comment.body = plainText.replace(regex, (_: string, id: string) => {
+        return "@" + (usermap[id] || id);
       });
     } else if (typeof comment.body === "string") {
       const regex = /\[~accountid:([^\]]+)\]/g;
