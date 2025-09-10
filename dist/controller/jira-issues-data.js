@@ -91,8 +91,12 @@ async function fetchingJiraIssues(key) {
                     // New ADF (Atlassian Document Format) object
                     descriptionText = extractTextFromADF(fieldsData.description);
                 }
+                else if (typeof fieldsData.description === "object") {
+                    // Handle any other object format by converting to string
+                    descriptionText = JSON.stringify(fieldsData.description);
+                }
             }
-            // Apply user resolution to the extracted text
+            // Apply user resolution to the extracted text and ensure it's a string
             issues.fields.description = (0, jira_helper_1.resolveUsers)(descriptionText, (0, jira_helper_1.createTeamMap)(team));
             issues = (0, jira_helper_1.resolveCommentUsers)(issues, (0, jira_helper_1.createTeamMap)(team));
         }

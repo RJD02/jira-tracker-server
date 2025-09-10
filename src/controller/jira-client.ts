@@ -124,6 +124,31 @@ import { configuration_db } from "../config/config";
 import { PrismaClient } from "@prisma/client";
 import { createTeamMap, jiraRecentActivityFilter, resolveCommentUsers, resolveUsers } from "../utils/helper/jira-helper";
 
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent: any): string {
+  if (!adfContent || !adfContent.content) {
+    return "";
+  }
+
+  let text = "";
+
+  function traverse(node: any) {
+    if (node.type === "text") {
+      text += node.text || "";
+    } else if (node.content && Array.isArray(node.content)) {
+      node.content.forEach(traverse);
+    }
+
+    // Add line breaks for certain block elements
+    if (node.type === "paragraph" || node.type === "heading") {
+      text += "\n";
+    }
+  }
+
+  adfContent.content.forEach(traverse);
+  return text.trim();
+}
+
 const prisma = new PrismaClient();
 
 export const fetchProjectJiraData = async (
@@ -227,7 +252,18 @@ export const fetchProjectJiraData = async (
 
     // Map the issues to Prisma format and include project_id
     const issueDataToInsert = issuesToTrack.issues.map((issue) => {
-        return {
+      // Handle main issue description - convert ADF to plain text if needed for database storage
+      let issueDescription = "";
+      if (issue.fields.description) {
+        if (typeof issue.fields.description === "string") {
+          issueDescription = issue.fields.description;
+        } else if (typeof issue.fields.description === "object" && issue.fields.description.content) {
+          // Convert ADF to plain text
+          issueDescription = extractTextFromADF(issue.fields.description);
+        }
+      }
+
+      return {
         id: issue.self,
         key: issue.key,
         summary: issue.fields.summary,
@@ -235,7 +271,7 @@ export const fetchProjectJiraData = async (
         assignee: issue.fields.assignee?.displayName || "",
         updated_at: new Date(),
         created_at: new Date(issue.fields.created),
-        description: issue.fields.issuetype.description || "",
+        description: issueDescription,
         worklog: JSON.stringify(issue.fields.worklog) || "",
         fields: JSON.stringify(issue.fields) || "",
         project_id: project_.id,
@@ -262,8 +298,8 @@ export const fetchProjectJiraData = async (
           (existingIssue) =>
             existingIssue.key === issue.key &&
             new Date().getTime() -
-              new Date(existingIssue.updated_at).getTime() >=
-              2 * 60 * 1000 // 30 minutes
+            new Date(existingIssue.updated_at).getTime() >=
+            2 * 60 * 1000 // 30 minutes
         )
     );
 
@@ -288,8 +324,20 @@ export const fetchProjectJiraData = async (
     // Add URL and resolve users if needed
     issuesToTrack.issues.forEach((issue) => {
       issue.url = `${baseurl}/browse/${issue.key}`;
-      issue.fields.issuetype.description = resolveUsers(
-        issue.fields.issuetype.description,
+
+      // Handle main issue description - convert ADF to plain text if needed
+      let issueDescription = "";
+      if (issue.fields.description) {
+        if (typeof issue.fields.description === "string") {
+          issueDescription = issue.fields.description;
+        } else if (typeof issue.fields.description === "object" && issue.fields.description.content) {
+          // Convert ADF to plain text
+          issueDescription = extractTextFromADF(issue.fields.description);
+        }
+      }
+
+      issue.fields.description = resolveUsers(
+        issueDescription,
         createTeamMap(team)
       );
       resolveCommentUsers(issue, createTeamMap(team));

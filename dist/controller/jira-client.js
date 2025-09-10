@@ -100,6 +100,27 @@ const node_fetch_1 = __importDefault(require("node-fetch"));
 const config_1 = require("../config/config");
 const client_1 = require("@prisma/client");
 const jira_helper_1 = require("../utils/helper/jira-helper");
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent) {
+    if (!adfContent || !adfContent.content) {
+        return "";
+    }
+    let text = "";
+    function traverse(node) {
+        if (node.type === "text") {
+            text += node.text || "";
+        }
+        else if (node.content && Array.isArray(node.content)) {
+            node.content.forEach(traverse);
+        }
+        // Add line breaks for certain block elements
+        if (node.type === "paragraph" || node.type === "heading") {
+            text += "\n";
+        }
+    }
+    adfContent.content.forEach(traverse);
+    return text.trim();
+}
 const prisma = new client_1.PrismaClient();
 const fetchProjectJiraData = async (extractProject, last_update_time) => {
     try {
@@ -179,6 +200,17 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         }
         // Map the issues to Prisma format and include project_id
         const issueDataToInsert = issuesToTrack.issues.map((issue) => {
+            // Handle main issue description - convert ADF to plain text if needed for database storage
+            let issueDescription = "";
+            if (issue.fields.description) {
+                if (typeof issue.fields.description === "string") {
+                    issueDescription = issue.fields.description;
+                }
+                else if (typeof issue.fields.description === "object" && issue.fields.description.content) {
+                    // Convert ADF to plain text
+                    issueDescription = extractTextFromADF(issue.fields.description);
+                }
+            }
             return {
                 id: issue.self,
                 key: issue.key,
@@ -187,7 +219,7 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
                 assignee: issue.fields.assignee?.displayName || "",
                 updated_at: new Date(),
                 created_at: new Date(issue.fields.created),
-                description: issue.fields.issuetype.description || "",
+                description: issueDescription,
                 worklog: JSON.stringify(issue.fields.worklog) || "",
                 fields: JSON.stringify(issue.fields) || "",
                 project_id: project_.id,
@@ -224,7 +256,18 @@ const fetchProjectJiraData = async (extractProject, last_update_time) => {
         // Add URL and resolve users if needed
         issuesToTrack.issues.forEach((issue) => {
             issue.url = `${baseurl}/browse/${issue.key}`;
-            issue.fields.issuetype.description = (0, jira_helper_1.resolveUsers)(issue.fields.issuetype.description, (0, jira_helper_1.createTeamMap)(team));
+            // Handle main issue description - convert ADF to plain text if needed
+            let issueDescription = "";
+            if (issue.fields.description) {
+                if (typeof issue.fields.description === "string") {
+                    issueDescription = issue.fields.description;
+                }
+                else if (typeof issue.fields.description === "object" && issue.fields.description.content) {
+                    // Convert ADF to plain text
+                    issueDescription = extractTextFromADF(issue.fields.description);
+                }
+            }
+            issue.fields.description = (0, jira_helper_1.resolveUsers)(issueDescription, (0, jira_helper_1.createTeamMap)(team));
             (0, jira_helper_1.resolveCommentUsers)(issue, (0, jira_helper_1.createTeamMap)(team));
         });
         console.log("Total issues processed:", issuesToTrack.issues.length);
