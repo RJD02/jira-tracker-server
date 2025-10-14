@@ -1,5 +1,5 @@
 export interface JiraResponse {
-  expand: string;
+  expand: string | null;
   startAt: number;
   maxResults: number;
   total: number;
@@ -69,10 +69,10 @@ interface User {
   accountType: string;
 }
 interface AvatarUrls {
-  "48x48": string;
-  "24x24": string;
-  "16x16": string;
-  "32x32": string;
+  size48x48: string;
+  size24x24: string;
+  size16x16: string;
+  size32x32: string;
 }
 interface Status {
   self: string;

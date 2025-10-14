@@ -1,4 +1,6 @@
-import JiraClient from "jira-client";
+// import JiraClient from "jira-client";
+import { Version3Client } from 'jira.js';
+// const { Version3Client } =  import('jira.js');
 
 export async function GetListOfProjects(
   baseurl: string,
@@ -6,23 +8,23 @@ export async function GetListOfProjects(
   username: string
 ) {
   try {
-    const jira = await new JiraClient({
-      protocol: "https",
-      host: baseurl,
-      username: username,
-      password: token,
-      apiVersion: "2",
-      strictSSL: true,
+    const jira = new Version3Client({
+      host: "https://" + baseurl,
+      authentication: {
+        basic: {
+          email: username,
+          apiToken: token,
+        },
+      },
     });
-    const projects = await jira.listProjects();
-    const projectArray = projects.map((project) => {
-      return {
-        id: project.self,
-        name: project.name,
-        key: project.key,
-      };
-    });
-
+    // console.log("Jira instance created: ", jira);
+    const projects = await jira.projects.searchProjects();
+    // console.log("Projects fetched: ", projects);
+    const projectArray = projects.values.map((project: any) => ({
+      id: project.id,
+      name: project.name,
+      key: project.key,
+    }));
     return projectArray;
   } catch (error) {
     console.error("Error fetching projects:", error);

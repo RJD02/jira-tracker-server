@@ -72,7 +72,7 @@ export const resolvers = {
     getUsers: async function (
       _: any,
       { baseurl, token, username, userKey }: GetUsersParams
-    ): Promise<UserResponse> {
+    ): Promise<UserResponse[]> {
       try {
         // Call the external function to fetch user data
         const data = await listUsersForProject(
@@ -82,25 +82,20 @@ export const resolvers = {
           userKey
         );
 
+        // console.log(typeof data, "what is data");
+
         // If no data is returned, throw an error
         if (!data || data.length === 0) {
           throw new Error("No users found");
         }
 
-        // Map to return the list of users
-        const users = data.map(
-          (user: {
-            accountId: String;
-            emailAddress: String;
-            displayName: String;
-            active: Boolean;
-          }) => ({
-            account_id: user.accountId || "", // Adjust field based on your requirements
-            emailAddress: user.emailAddress || "",
-            displayName: user.displayName || "",
-            active: user.active !== undefined ? user.active : false, // Default to false if not present
-          })
-        );
+        // Map to return the list of users with the correct type
+        const users: UserResponse[] = data.map((user) => ({
+          account_id: String(user.accountId),
+          emailAddress: String(user.emailAddress),
+          displayName: String(user.displayName),
+          active: Boolean(user.active),
+        }));
 
         return users;
       } catch (error) {

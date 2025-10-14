@@ -5,6 +5,27 @@ const client_1 = require("@prisma/client");
 const jira_helper_1 = require("../utils/helper/jira-helper");
 const config_1 = require("../config/config");
 const prisma = new client_1.PrismaClient();
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent) {
+    if (!adfContent || !adfContent.content) {
+        return "";
+    }
+    let text = "";
+    function traverse(node) {
+        if (node.type === "text") {
+            text += node.text || "";
+        }
+        else if (node.content && Array.isArray(node.content)) {
+            node.content.forEach(traverse);
+        }
+        // Add line breaks for certain block elements
+        if (node.type === "paragraph" || node.type === "heading") {
+            text += "\n";
+        }
+    }
+    adfContent.content.forEach(traverse);
+    return text.trim();
+}
 async function fetchingJiraIssues(key) {
     const { board, credential, team, baseurl } = await (0, config_1.configuration_db)(key);
     // Fetch the project using the label (key)
@@ -59,7 +80,24 @@ async function fetchingJiraIssues(key) {
                 issue.worklog === "") {
                 issue.worklog = fieldsData.worklog;
             }
-            issues.fields.description = (0, jira_helper_1.resolveUsers)(fieldsData.description, (0, jira_helper_1.createTeamMap)(team));
+            // Handle description field - it can be either string or ADF object
+            let descriptionText = "";
+            if (fieldsData.description) {
+                if (typeof fieldsData.description === "string") {
+                    // Legacy string format
+                    descriptionText = fieldsData.description;
+                }
+                else if (typeof fieldsData.description === "object" && fieldsData.description.content) {
+                    // New ADF (Atlassian Document Format) object
+                    descriptionText = extractTextFromADF(fieldsData.description);
+                }
+                else if (typeof fieldsData.description === "object") {
+                    // Handle any other object format by converting to string
+                    descriptionText = JSON.stringify(fieldsData.description);
+                }
+            }
+            // Apply user resolution to the extracted text and ensure it's a string
+            issues.fields.description = (0, jira_helper_1.resolveUsers)(descriptionText, (0, jira_helper_1.createTeamMap)(team));
             issues = (0, jira_helper_1.resolveCommentUsers)(issues, (0, jira_helper_1.createTeamMap)(team));
         }
         catch (error) {

@@ -7,12 +7,49 @@ exports.jiraRecentActivityFilter = jiraRecentActivityFilter;
 const utils_1 = require("../utils");
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent) {
+    if (!adfContent || !adfContent.content) {
+        return "";
+    }
+    let text = "";
+    function traverse(node) {
+        if (node.type === "text") {
+            text += node.text || "";
+        }
+        else if (node.content && Array.isArray(node.content)) {
+            node.content.forEach(traverse);
+        }
+        // Add line breaks for certain block elements
+        if (node.type === "paragraph" || node.type === "heading") {
+            text += "\n";
+        }
+    }
+    adfContent.content.forEach(traverse);
+    return text.trim();
+}
 function resolveCommentUsers(issue, usermap) {
     issue.fields.comment.comments.forEach((comment) => {
-        const regex = /\[~accountid:([^\]]+)\]/g;
-        comment.body = comment.body?.replace(regex, (_, id) => {
-            return "@" + (usermap[id] || id);
-        });
+        if (comment.body &&
+            typeof comment.body === "object" &&
+            "content" in comment.body) {
+            // Convert ADF to plain text first
+            const plainText = extractTextFromADF(comment.body);
+            // Then resolve user mentions
+            const regex = /\[~accountid:([^\]]+)\]/g;
+            comment.body = plainText.replace(regex, (_, id) => {
+                return "@" + (usermap[id] || id);
+            });
+        }
+        else if (typeof comment.body === "string") {
+            const regex = /\[~accountid:([^\]]+)\]/g;
+            comment.body = comment.body.replace(regex, (_, id) => {
+                return "@" + (usermap[id] || id);
+            });
+        }
+        else {
+            console.warn("Comment body is not in the expected format:", comment.body);
+        }
     });
     return issue;
 }

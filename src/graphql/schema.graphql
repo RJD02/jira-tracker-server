@@ -24,7 +24,7 @@ type AuthPayload {
 }
 
 type JiraResponse {
-  expand: String!
+  expand: String
   startAt: Int!
   maxResults: Int!
   total: Int!

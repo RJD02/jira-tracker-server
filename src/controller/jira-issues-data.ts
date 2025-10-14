@@ -8,6 +8,31 @@ import {
 import { configuration_db } from "../config/config";
 const prisma = new PrismaClient();
 
+// Helper function to extract plain text from Atlassian Document Format (ADF)
+function extractTextFromADF(adfContent: any): string {
+  if (!adfContent || !adfContent.content) {
+    return "";
+  }
+
+  let text = "";
+
+  function traverse(node: any) {
+    if (node.type === "text") {
+      text += node.text || "";
+    } else if (node.content && Array.isArray(node.content)) {
+      node.content.forEach(traverse);
+    }
+
+    // Add line breaks for certain block elements
+    if (node.type === "paragraph" || node.type === "heading") {
+      text += "\n";
+    }
+  }
+
+  adfContent.content.forEach(traverse);
+  return text.trim();
+}
+
 export async function fetchingJiraIssues(key: string) {
   const { board, credential, team, baseurl } = await configuration_db(key);
 
@@ -71,8 +96,24 @@ export async function fetchingJiraIssues(key: string) {
       ) {
         issue.worklog = fieldsData.worklog;
       }
+      // Handle description field - it can be either string or ADF object
+      let descriptionText = "";
+      if (fieldsData.description) {
+        if (typeof fieldsData.description === "string") {
+          // Legacy string format
+          descriptionText = fieldsData.description;
+        } else if (typeof fieldsData.description === "object" && fieldsData.description.content) {
+          // New ADF (Atlassian Document Format) object
+          descriptionText = extractTextFromADF(fieldsData.description);
+        } else if (typeof fieldsData.description === "object") {
+          // Handle any other object format by converting to string
+          descriptionText = JSON.stringify(fieldsData.description);
+        }
+      }
+
+      // Apply user resolution to the extracted text and ensure it's a string
       issues.fields.description = resolveUsers(
-        fieldsData.description,
+        descriptionText,
         createTeamMap(team)
       );
       issues = resolveCommentUsers(issues, createTeamMap(team));

@@ -46,16 +46,17 @@ exports.resolvers = {
             try {
                 // Call the external function to fetch user data
                 const data = await (0, jira_list_user_in_project_1.listUsersForProject)(baseurl, token, username, userKey);
+                // console.log(typeof data, "what is data");
                 // If no data is returned, throw an error
                 if (!data || data.length === 0) {
                     throw new Error("No users found");
                 }
-                // Map to return the list of users
+                // Map to return the list of users with the correct type
                 const users = data.map((user) => ({
-                    account_id: user.accountId || "", // Adjust field based on your requirements
-                    emailAddress: user.emailAddress || "",
-                    displayName: user.displayName || "",
-                    active: user.active !== undefined ? user.active : false, // Default to false if not present
+                    account_id: String(user.accountId),
+                    emailAddress: String(user.emailAddress),
+                    displayName: String(user.displayName),
+                    active: Boolean(user.active),
                 }));
                 return users;
             }
